@@ -1,0 +1,13 @@
+
+{
+  "type": "service_account",
+  "project_id": "meterbybot",
+  "private_key_id": "4586acb645767f826828e75f4cd50c9fa60852c6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDoTzj6Xjgeg+Wm\n3cJOIQgJ3q6IdaA4gEHh+g7ipzvY0e2qBQag8qOQkQfy/9U/xHYjt5o3NuRnOyOK\n9A7kgKS70ai+pnXQiO4dGetXWDg0uQzNZw8TpocB9PiWxLraBpkwyVFufo9b8wp3\n86kJBsYI0yAJF2q4UbbzOngDiRJc5WGJCSPDtBlZ8cIjTUmbVHanH9XTKBNweFTB\n51vGFYWTe78o4oTWLX8tXMVVWekVqu9Nhet5NRo6+VQMecng4LyBj7ZryWoPuOJK\nac85G1KS2I0hnA8VuQ1PmIL0cZ0YyuMZklXTfh0hsIwtcEMsfjMnf+OhDtw79hTh\nCXkMwdNLAgMBAAECggEAPIf8BDzNqaHbkpXA3eO8ePnlh1gC5gYBZLTn8QX7UZ0t\nrLn/hquClBY+OIKR2bpCwD7Ed7OdYwqlUb0TLlYY1nmkWvz7wNkVFk8dI9awWoiH\nPfQnGQswrYFbzsk3GL1UaEJkrgJbL23OIgBC4L+7lSwR8lyAKcPdBFaNU/qA5uQ8\nyv/zki50DmYSlYa1PnjT3RyX4aL5wImKfstcPdeGGeQOR8C+FWAREQIXUePxsjd0\nwQowZoRL0YNuInGpElcS7ojjEGmo9zktzKxXrgQNwP2ZPtkOFg9jih7cPar+k/yT\nahxH3SOgJTDfmSBw5bfpW0Ra9g7nJKDPW/Y75VtdAQKBgQD+AatGj6UrIgNJxSZ1\nv0u4OeI+wv6ZkzOuVOowkI/Yi/zOh1pz/U19CQUYoUWkGpil1x/dqJpa+KUU7lAn\nc+QDlktkEX9eoIL+ewMrqrkDd7QpjE79Zhh6mGV7Fy6/kczNQxWE4CsXsSplIfA1\nJ4h5qAKxqG1cR3xP1Ez8xqbxAQKBgQDqIfYfbuYocI1NzkpJHJu+fr5fnTfHirip\nB3oi4Nq+x8PlzXaeSfXKrDygEtApkvoEMelVj3i4HG9IAIkIInaD/Ylc6Nx5gLQI\ny8sbD9xlBdGzWmFn5k8A7KrjhG8QTaffGBY7D4AvmwJfxbE9tkXnn64InIDj/evB\nuZ9tRCE4SwKBgFoNt26N0O4o4eeOmSMXzj2jb/32XhOOp7z/6AONzSHmB5wlSsFi\npc1VnFPuIWWb9FCfo3GPrCHik4yHLS2/nbBT4ai5t2GSIL8eV7JslamQD/THBN48\nCyOz0g7A2lca1vRS+1cfrsd4jWJLlQETYgRXt5TK9PLJeV5IE39u4pMBAoGAYVVf\nCXBEFHm99KOW9FAFWys7n2ovny/HVtW567gImBlaEjXZYzKiEPCLf4xyp2XntEi/\nlQdBC2EezhMS5KPXG0YSjeJsjcJ4ldOLCyQL3p+Nrv8a0WPIYj0BSfZraZ6u9CsC\nSulFxASv9vqrlVkqNIGIiyHs31tXYED3yyfwm4MCgYBy0GGaDbGF1t8iJl67T4yM\n3NLNytDTSE/PLJIaebCRRcxTHjXqwfjFCS+xmi1uVWrJhhFa6FoeOccOfXy2do8J\nl8C2i1S7bi2ro7aLJyvQONGczo3ekutl87cWdyx7BoFv7U7U+/e60eNS9RlDmMvJ\nCIalaTdRMWnZiQfNXgtFvw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "meterbybot@meterbybot.iam.gserviceaccount.com",
+  "client_id": "112856502941513144769",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/meterbybot%40meterbybot.iam.gserviceaccount.com"
+}
