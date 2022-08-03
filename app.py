@@ -36,16 +36,7 @@ config = dotenv_values(".env")  # config = {"USER": "foo", "EMAIL": "foo@example
 print('external server 500')
 #123#123
 
-# import flask
-# import os
-# from flask import send_from_directory
 
-# app = flask.Flask(__name__)
-
-# @app.route('/favicon.ico')
-# def favicon():
-#     return send_from_directory(os.path.join(app.root_path, 'static'),
-#                                'favicon.ico', mimetype='image/favicon.png')
 
 
 # Flask
@@ -69,9 +60,12 @@ print('external server 500')
 
 # print(request.get_json(silent=True, force=True))
 # print(mycursor.rowcount, "record inserted.")
+from flask import send_from_directory
+
 app = Flask(__name__)
+@app.route('/favicon.ico')
+
 @app.route('/', methods=['POST']) 
-# @app.route('/') 
 
 def MainFunction():
     #รับ intent จาก Dailogflow
@@ -86,7 +80,15 @@ def MainFunction():
     return r
 
 
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/favicon.png')
 
+
+
+def home_view():
+        return "connecting ... "
+    
  
 def generating_answer(question_from_dailogflow_dict):
 
