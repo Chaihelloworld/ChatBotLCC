@@ -97,7 +97,6 @@ def generating_answer(question_from_dailogflow_dict):
 
     #เก็บต่า ชื่อของ intent ที่รับมาจาก Dailogflow
     intent_group_question_str = question_from_dailogflow_dict["queryResult"]["intent"]["displayName"] 
-
     #ลูปตัวเลือกของฟังก์ชั่นสำหรับตอบคำถามกลับ
     if intent_group_question_str == 'คำนวณ':    
 
@@ -204,15 +203,22 @@ def calDay(data):
       return data+'/30'
    
 def calGroup(data): 
-    if data == 1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9:
-      return '0'+data
-    elif data == 10 or 11 or 12:
-      return data
+    if int(data) < 10:
 
+
+      return '0'+data
+    else :
+      return data
+# def validate(data):
+#     if int(data) > 12 : 
+#       return 12
+#     else:
+#       return data
 def getReportBymonth(respond_dict):
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
     Smonth = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["start_month.original"]
     Emonth = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["end_month.original"]
+    # endMonth=validate(Emonth)
     # select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
     select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND group_month >= %(group1)s and group_month <= %(group2)s"
     d1 = date.today().strftime("%Y")+'/'+calGroup(Smonth)
@@ -361,4 +367,3 @@ if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000) )
     print("Starting app on port %d" % port)
     app.run(debug=False, port=port, host='0.0.0.0', threaded=True)
-
