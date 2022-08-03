@@ -36,6 +36,18 @@ config = dotenv_values(".env")  # config = {"USER": "foo", "EMAIL": "foo@example
 print('external server 500')
 #123#123
 
+# import flask
+# import os
+# from flask import send_from_directory
+
+# app = flask.Flask(__name__)
+
+# @app.route('/favicon.ico')
+# def favicon():
+#     return send_from_directory(os.path.join(app.root_path, 'static'),
+#                                'favicon.ico', mimetype='image/favicon.png')
+
+
 # Flask
 
 # import mysql.connector
@@ -59,8 +71,9 @@ print('external server 500')
 # print(mycursor.rowcount, "record inserted.")
 app = Flask(__name__)
 @app.route('/', methods=['POST']) 
-def MainFunction():
+# @app.route('/') 
 
+def MainFunction():
     #รับ intent จาก Dailogflow
     question_from_dailogflow_raw = request.get_json(silent=True, force=True)
   
@@ -112,9 +125,9 @@ def menu_recormentation(respond_dict): #ฟังก์ชั่นสำหร�
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
     d1 = date.today().strftime("%Y/%m/%d")
     # token = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["replyToken"]
-    group_mouth = date.today().strftime("%Y/%m")
+    group_month = date.today().strftime("%Y/%m")
     sheet.insert_row([meter_value,d1],2)
-    connect(user_id,meter_value,group_mouth,d1)
+    connect(user_id,meter_value,group_month,d1)
 
 # dd/mm/YY
     
@@ -131,11 +144,11 @@ db =  mysql.connector.connect(
         password=os.getenv('PASSWORD'),
         database=os.getenv('DB'),
     )
-def connect(userId,data,group_mouth,date):
-    
+print(db)      
+def connect(userId,data,group_month,date):
     mycursor = db.cursor()
-    sql = "INSERT INTO user_list_meter (user_id, meter_value, group_mouth, create_at) VALUES (%s, %s, %s,%s)"
-    val = (userId , int(data),group_mouth, date)
+    sql = "INSERT INTO user_list_meter (user_id, meter_value, group_month, create_at) VALUES (%s, %s, %s,%s)"
+    val = (userId , int(data),group_month, date)
     mycursor.execute(sql,val)
 
     db.commit()
@@ -198,8 +211,8 @@ def getReportBymonth(respond_dict):
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
     Smonth = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["start_month.original"]
     Emonth = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["end_month.original"]
-    # select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND group_mouth >= %(group1)s and group_mouth <= %(group2)s"
+    # select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND group_month >= %(group1)s and group_month <= %(group2)s"
     d1 = date.today().strftime("%Y")+'/'+calGroup(Smonth)
     d2 = date.today().strftime("%Y")+'/'+calGroup(Emonth)
     mycursor = db.cursor()
@@ -233,18 +246,18 @@ def getReport_mounth(respond_dict):
     mycursor = db.cursor()
 
     # mycursor.execute()
-    select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m3 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m4 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m5 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m6 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m7 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m8 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m9 = "SELECT MAX(meter_value) - MIN(meter_value)FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m10 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m11 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
-    select_m12 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_mouth  = %(group)s"
+    select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m3 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m4 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m5 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m6 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m7 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m8 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m9 = "SELECT MAX(meter_value) - MIN(meter_value)FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m10 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m11 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    select_m12 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
     mycursor.execute(select_m1, { 'user_id': user_id ,'group': d1 } )
     myresult_m1 = mycursor.fetchall()
 
@@ -343,7 +356,7 @@ def getReport_mounth(respond_dict):
     return  answer_function 
  
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 3000) )
+    port = int(os.getenv('PORT', 5000) )
     print("Starting app on port %d" % port)
     app.run(debug=False, port=port, host='0.0.0.0', threaded=True)
 
