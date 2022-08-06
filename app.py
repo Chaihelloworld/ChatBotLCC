@@ -11,6 +11,7 @@ from flask import request
 from flask import make_response
 
 from datetime import date
+from datetime import timedelta
 
 
 #----Additional from previous file----
@@ -118,13 +119,32 @@ def generating_answer(question_from_dailogflow_dict):
     
     return answer_from_bot
 
+def initText(data):
+    if data is not None:
+        for xs in data:
+                result = xs
+                if not all(result) == True : 
+                    return "ไม่มีค่าที่บันทึกของเมื่อวาน"
+                else : 
+                    y=sum(result)
+                    x = "เมื่อวานใช้ไฟ ทั้งหมด"+str(y)+"หน่วย"
 
+                    return x
 def menu_recormentation(respond_dict): #ฟังก์ชั่นสำหรับเมนูแนะนำ
-    answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ'
+    mycursor = db.cursor()
+    user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
+
+    select_today = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at BETWEEN %(d1)s AND %(d2)s;"
+    d1 = date.today().strftime("%Y/%m/%d")
+    yesterday = date.today() - timedelta(days = 1)
+    print(yesterday)
+    mycursor.execute(select_today, { 'user_id': user_id ,'d1': yesterday.strftime("%Y/%m/%d"),'d2':d1  } )
+    myresult = mycursor.fetchall()
+    print(myresult)
+    xlist = initText(myresult)
+    answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
     
     meter_value = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"]
-    user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
-    d1 = date.today().strftime("%Y/%m/%d")
     # token = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["replyToken"]
     group_month = date.today().strftime("%Y/%m")
     sheet.insert_row([meter_value,d1],2)
@@ -252,8 +272,10 @@ def getReport_mounth(respond_dict):
     d11 = date.today().strftime("%Y")+'/11'
     d12 = date.today().strftime("%Y")+'/12'
     mycursor = db.cursor()
+    
 
     # mycursor.execute()
+
     select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
     select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
     select_m3 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
