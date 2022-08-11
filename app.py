@@ -5,6 +5,7 @@ import array
 # from asyncio.windows_events import NULL
 import json
 import os
+from re import X
 from types import NoneType
 from flask import Flask
 from flask import request
@@ -13,11 +14,13 @@ from flask import make_response
 from datetime import date
 from datetime import timedelta
 
+import uuid
 
 #----Additional from previous file----
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pyparsing import empty
+from datetime import datetime
 
 
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
@@ -34,9 +37,31 @@ import os
 from dotenv import dotenv_values
 
 config = dotenv_values(".env")  # config = {"USER": "foo", "EMAIL": "foo@example.org"}
-print('external server 500')
-#123#123
 
+
+
+#123#123
+from datetime import datetime, timedelta
+from threading import Timer
+
+x=datetime.today()
+y = x.replace(day=x.day, hour=16, minute=0, second=0, microsecond=0) + timedelta(days=1)
+delta_t=y-x
+
+secs=delta_t.total_seconds()
+print('x.day---->',x.day)
+print('y---->',y)
+
+print('delta_t----->',delta_t)
+
+print('secs---->',secs)
+def hello_world():
+    print ("hello world")
+    #...
+
+t = Timer(secs, hello_world)
+t.start()
+print('t---->',t)
 
 
 
@@ -62,7 +87,7 @@ print('external server 500')
 # print(request.get_json(silent=True, force=True))
 # print(mycursor.rowcount, "record inserted.")
 from flask import send_from_directory
-
+import requests
 app = Flask(__name__)
 @app.route('/favicon.ico')
 
@@ -71,7 +96,10 @@ app = Flask(__name__)
 def MainFunction():
     #รับ intent จาก Dailogflow
     question_from_dailogflow_raw = request.get_json(silent=True, force=True)
-  
+    # print(date.today().strftime("HH:MM"))
+    if date.today().strftime("HH:MM") == "16:00":
+      print('now 16.00')
+
     #เรียกใช้ฟังก์ชัน generate_answer เพื่อแยกส่วนของคำถาม
     answer_from_bot = generating_answer(question_from_dailogflow_raw)
     #ตอบกลับไปที่ Dailogflow
@@ -131,31 +159,102 @@ def initText(data):
 
                     return x
 def menu_recormentation(respond_dict): #ฟังก์ชั่นสำหรับเมนูแนะนำ
-    mycursor = db.cursor()
+    
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
 
     select_today = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at BETWEEN %(d1)s AND %(d2)s;"
     d1 = date.today().strftime("%Y/%m/%d")
     yesterday = date.today() - timedelta(days = 1)
-    print(yesterday)
-    mycursor.execute(select_today, { 'user_id': user_id ,'d1': yesterday.strftime("%Y/%m/%d"),'d2':d1  } )
-    myresult = mycursor.fetchall()
-    print(myresult)
-    xlist = initText(myresult)
-    answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
+    # print(yesterday)
+    mycursor = db.cursor()
+    mycursor.execute(select_today, { 'user_id': user_id ,'d1': yesterday.strftime("%Y/%m/%d"),'d2':d1  })
     
+    myresult = mycursor.fetchall()
+    # print(myresult)
+    xlist = initText(myresult)
+    ylist = SelectValid(user_id)
     meter_value = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"]
-    # token = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["replyToken"]
+    
+    token = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["replyToken"]
     group_month = date.today().strftime("%Y/%m")
     sheet.insert_row([meter_value,d1],2)
-    connect(user_id,meter_value,group_month,d1)
+    # CountInsertData(user_id)
+    print('---->',ylist,'meter__--->',meter_value)
+    # validate = "SELECT MAX(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at = %(d1)s ;"
+    print('int(meter_value)---->',int(meter_value))
+    print('int(valid)---->',int(ylist))
+    if int(meter_value) < int(ylist) :
+       answer_function = "ข้อมูลน้อยกว่า ค่าในระบบกรุณากรอกข้อมูลใหม่" 
+      #  return answer_function
+    elif int(meter_value) > (int(ylist)+ int(50)):
+       answer_function = "ค่ามิเตอร์ที่บันทึก มากกว่า 50 หน่วยกรุณาตรวจสอบใหม่อีกครั้ง" 
+      #  return answer_function
+    else :
+      # connect(user_id,meter_value,group_month,d1)
+      # sheet.insert_row([meter_value,d1],2)
+      # answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
+       connect(user_id,meter_value,group_month,d1)
+       answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
+      # return answer_function
+   
 
 # dd/mm/YY
     
     return  answer_function 
 
 #Flask
+def SelectValid(user_id):
+    mycursor = db.cursor()
+    
+    validate = "SELECT MAX(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_idValid)s AND create_at = %(date)s ;"
+    mycursor.execute(validate, { 'user_idValid': user_id ,'date':date.today().strftime("%Y/%m/%d") })
+    myresultValid = mycursor.fetchall()
+    for xs in myresultValid:
+        xlist = sum(xs)
+        return xlist
 
+
+def CountInsertData(user_id):
+    print(datetime.now().strftime("%H:%M:%S"))
+    xDate = datetime.now().strftime("%H:%M:%S")
+    if xDate == "01:26:59":
+      print('yessssssssssss')
+    select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
+    mycursor = db.cursor()
+    #  m2
+    mycursor.execute(select_insert, { 'user_id': user_id ,'date': date.today().strftime("%Y%m%d") } )
+    select_insertFetch = mycursor.fetchall()
+    x = sumMin(select_insertFetch)
+    print('in fn---------> ',x)
+    if x == 0:
+        urls = 'https://api.line.me/v2/bot/message/broadcast'
+        linepayload = {} 
+        linepayload['type'] = 'sticker'
+        linepayload['packageId'] = '789'
+        linepayload['stickerId'] = '10858'
+
+
+        payload = {
+        "messages":[
+            {
+                "type":"text",
+                "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ "
+            },
+                  linepayload
+        ],
+      
+        }
+        accessToken = 'Z2L8q4HDsVr+djACC0BfI1KkT52Ocye4a89AoWUDlGn8qEdbcD19yraBCkXfRkys+6sjlnizlf1YFmk/5YtnX9pP5CSEKDsxgfhT/RM2NJkWdS65X33s7JRh5C5Q8wbbDq2w2truZUpzDDmrB8roRgdB04t89/1O/w1cDnyilFU='
+
+        headers = {
+          'content-type': 'application/json',
+          'Authorization':'Bearer '+str(accessToken),
+          'X-Line-Retry-Key':str((uuid.uuid1()))
+          } 
+        r = requests.post(urls, data=json.dumps(payload), headers=headers)
+        print(r)
+
+        print(x)
 
 
 
@@ -384,8 +483,16 @@ def getReport_mounth(respond_dict):
     # sheet.insert_row([meter_value,d1],2)
     # connect(user_id,meter_value,token,d1)
     return  answer_function 
+
+
+        
+
+    # END OF ADMIN CONVERSATION HANDLER TO BROADCAST MESSAGE
+
+    # START OF ADMIN CONVERSATION HANDLER TO REPLACE THE DATABASE 
  
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000) )
     print("Starting app on port %d" % port)
     app.run(debug=False, port=port, host='0.0.0.0', threaded=True)
+
