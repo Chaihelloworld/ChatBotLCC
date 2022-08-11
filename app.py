@@ -1,12 +1,16 @@
 #code by Stackpython
 #Import Library
 import array
+
+
 # from asyncio import constants
 # from asyncio.windows_events import NULL
 import json
+from operator import ge
 import os
 from re import X
 from types import NoneType
+from typing import Any
 from flask import Flask
 from flask import request
 from flask import make_response
@@ -23,11 +27,11 @@ from pyparsing import empty
 from datetime import datetime
 
 
+
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 cerds = ServiceAccountCredentials.from_json_keyfile_name("cerds.json", scope)
 client = gspread.authorize(cerds)
 sheet = client.open("Bybot").worksheet('Sheet1') 
-
 
 from random import randint
 
@@ -39,55 +43,13 @@ from dotenv import dotenv_values
 config = dotenv_values(".env")  # config = {"USER": "foo", "EMAIL": "foo@example.org"}
 
 
-
-#123#123
-from datetime import datetime, timedelta
-from threading import Timer
-
-x=datetime.today()
-y = x.replace(day=x.day, hour=16, minute=0, second=0, microsecond=0) + timedelta(days=1)
-delta_t=y-x
-
-secs=delta_t.total_seconds()
-print('x.day---->',x.day)
-print('y---->',y)
-
-print('delta_t----->',delta_t)
-
-print('secs---->',secs)
-def hello_world():
-    print ("hello world")
-    #...
-
-t = Timer(secs, hello_world)
-t.start()
-print('t---->',t)
+import schedule
+import time
 
 
-
-# Flask
-
-# import mysql.connector
-
-# db =  mysql.connector.connect(
-#     host="http://128.199.208.244/",
-#     user="root",
-#     password="Password.lcc2030",
-#     database="meter"
-# )
-# mycursor = db.cursor()
-# text = request.get_json(silent=True, force=True)
-# sql = "INSERT INTO req_question (question, result) VALUES (%s, %s)"
-# val = (text["queryResult"]["intent"]["displayName"] , "Highway 21")
-# mycursor.execute(sql,val )
-
-# db.commit()
-
-
-# print(request.get_json(silent=True, force=True))
-# print(mycursor.rowcount, "record inserted.")
 from flask import send_from_directory
 import requests
+
 app = Flask(__name__)
 @app.route('/favicon.ico')
 
@@ -113,12 +75,9 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/favicon.png')
 
-
-
 def home_view():
         return "connecting ... "
-    
- 
+  
 def generating_answer(question_from_dailogflow_dict):
 
     #Print intent ที่รับมาจาก Dailogflow
@@ -138,7 +97,7 @@ def generating_answer(question_from_dailogflow_dict):
         answer_str = getReportBymonth(question_from_dailogflow_dict)
 
     else: answer_str = "ผมไม่เข้าใจ คุณต้องการอะไร"
-
+    
     #สร้างการแสดงของ dict 
     answer_from_bot = {"fulfillmentText": answer_str}
     
@@ -170,7 +129,6 @@ def menu_recormentation(respond_dict): #ฟังก์ชั่นสำหร�
     mycursor.execute(select_today, { 'user_id': user_id ,'d1': yesterday.strftime("%Y/%m/%d"),'d2':d1  })
     
     myresult = mycursor.fetchall()
-    # print(myresult)
     xlist = initText(myresult)
     ylist = SelectValid(user_id)
     meter_value = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"]
@@ -178,83 +136,42 @@ def menu_recormentation(respond_dict): #ฟังก์ชั่นสำหร�
     token = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["replyToken"]
     group_month = date.today().strftime("%Y/%m")
     sheet.insert_row([meter_value,d1],2)
-    # CountInsertData(user_id)
+    
     print('---->',ylist,'meter__--->',meter_value)
-    # validate = "SELECT MAX(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at = %(d1)s ;"
     print('int(meter_value)---->',int(meter_value))
     print('int(valid)---->',int(ylist))
     if int(meter_value) < int(ylist) :
        answer_function = "ข้อมูลน้อยกว่า ค่าในระบบกรุณากรอกข้อมูลใหม่" 
-      #  return answer_function
     elif int(meter_value) > (int(ylist)+ int(50)):
        answer_function = "ค่ามิเตอร์ที่บันทึก มากกว่า 50 หน่วยกรุณาตรวจสอบใหม่อีกครั้ง" 
-      #  return answer_function
     else :
-      # connect(user_id,meter_value,group_month,d1)
-      # sheet.insert_row([meter_value,d1],2)
-      # answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
+
        connect(user_id,meter_value,group_month,d1)
        answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
-      # return answer_function
+
    
 
 # dd/mm/YY
     
     return  answer_function 
-
+  
+  
 #Flask
 def SelectValid(user_id):
     mycursor = db.cursor()
     
-    validate = "SELECT MAX(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_idValid)s AND create_at = %(date)s ;"
-    mycursor.execute(validate, { 'user_idValid': user_id ,'date':date.today().strftime("%Y/%m/%d") })
+    validate = "SELECT MAX(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_idValid)s ;"
+    mycursor.execute(validate, { 'user_idValid': user_id  })
     myresultValid = mycursor.fetchall()
-    for xs in myresultValid:
-        xlist = sum(xs)
-        return xlist
+    if myresultValid is not None:
+         for xs in myresultValid:
+                result = xs
+                if not all(result) == True : 
+                    return 0
+                else : 
+                    x = result
+                    return sum(x)
 
-
-def CountInsertData(user_id):
-    print(datetime.now().strftime("%H:%M:%S"))
-    xDate = datetime.now().strftime("%H:%M:%S")
-    if xDate == "01:26:59":
-      print('yessssssssssss')
-    select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
-    mycursor = db.cursor()
-    #  m2
-    mycursor.execute(select_insert, { 'user_id': user_id ,'date': date.today().strftime("%Y%m%d") } )
-    select_insertFetch = mycursor.fetchall()
-    x = sumMin(select_insertFetch)
-    print('in fn---------> ',x)
-    if x == 0:
-        urls = 'https://api.line.me/v2/bot/message/broadcast'
-        linepayload = {} 
-        linepayload['type'] = 'sticker'
-        linepayload['packageId'] = '789'
-        linepayload['stickerId'] = '10858'
-
-
-        payload = {
-        "messages":[
-            {
-                "type":"text",
-                "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ "
-            },
-                  linepayload
-        ],
-      
-        }
-        accessToken = 'Z2L8q4HDsVr+djACC0BfI1KkT52Ocye4a89AoWUDlGn8qEdbcD19yraBCkXfRkys+6sjlnizlf1YFmk/5YtnX9pP5CSEKDsxgfhT/RM2NJkWdS65X33s7JRh5C5Q8wbbDq2w2truZUpzDDmrB8roRgdB04t89/1O/w1cDnyilFU='
-
-        headers = {
-          'content-type': 'application/json',
-          'Authorization':'Bearer '+str(accessToken),
-          'X-Line-Retry-Key':str((uuid.uuid1()))
-          } 
-        r = requests.post(urls, data=json.dumps(payload), headers=headers)
-        print(r)
-
-        print(x)
 
 
 
@@ -273,26 +190,6 @@ def connect(userId,data,group_month,date):
 
     db.commit()
     return  val 
-
-   
-# def sum_meter(myresult):
-#     for x in myresult:
-#         i=0
-#         m1=int(x[i])
-#         # xray= xray+ x[i]
-       
-#     #     sum += x
-#         i = i+1 
-#         return m1
-
-# def sumMax(data):
-#     Max = 0 
-#     if data is None :
-#         Max = 0
-#     else :
-#         for xs in data:
-#          Max=sum(xs)
-#     return Max
 
 def sumMin(data):
     if data is not None:
@@ -328,17 +225,12 @@ def calGroup(data):
       return '0'+data
     else :
       return data
-# def validate(data):
-#     if int(data) > 12 : 
-#       return 12
-#     else:
-#       return data
+
 def getReportBymonth(respond_dict):
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
     Smonth = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["start_month.original"]
     Emonth = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["end_month.original"]
-    # endMonth=validate(Emonth)
-    # select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+
     select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND group_month >= %(group1)s and group_month <= %(group2)s"
     d1 = date.today().strftime("%Y")+'/'+calGroup(Smonth)
     d2 = date.today().strftime("%Y")+'/'+calGroup(Emonth)
@@ -347,9 +239,7 @@ def getReportBymonth(respond_dict):
     mycursor.execute(select_m2, { 'user_id': user_id ,'group1': d1 ,'group2':d2} )
     myresult_m2 = mycursor.fetchall()
     result = monthrange(myresult_m2)
-    # m1 = calMonth(Smonth)
-    # m2 = calMonth(Emonth)
-    # print(calGroup(Smonth),calGroup(Emonth))
+
     
     answer_function = 'ช่วงเดือน '+ calGroup(Smonth)  +' - '+ calGroup(Emonth)+ '\nใช้ทั้งหมด '+ str(result)+' หน่วย'
     return answer_function
@@ -484,15 +374,15 @@ def getReport_mounth(respond_dict):
     # connect(user_id,meter_value,token,d1)
     return  answer_function 
 
-
-        
-
     # END OF ADMIN CONVERSATION HANDLER TO BROADCAST MESSAGE
 
-    # START OF ADMIN CONVERSATION HANDLER TO REPLACE THE DATABASE 
  
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000) )
     print("Starting app on port %d" % port)
     app.run(debug=False, port=port, host='0.0.0.0', threaded=True)
+
+
+
+
 
