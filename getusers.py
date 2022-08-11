@@ -78,7 +78,7 @@ def CountInsertData(user_id):
         ],
       
         }
-        accessToken = 'Z2L8q4HDsVr+djACC0BfI1KkT52Ocye4a89AoWUDlGn8qEdbcD19yraBCkXfRkys+6sjlnizlf1YFmk/5YtnX9pP5CSEKDsxgfhT/RM2NJkWdS65X33s7JRh5C5Q8wbbDq2w2truZUpzDDmrB8roRgdB04t89/1O/w1cDnyilFU='
+        accessToken = os.getenv("ACCESSTOKEN");
 
         headers = {
           'content-type': 'application/json',
