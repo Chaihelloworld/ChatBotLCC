@@ -1,10 +1,3 @@
-#code by Stackpython
-#Import Library
-import array
-
-
-# from asyncio import constants
-# from asyncio.windows_events import NULL
 import json
 from operator import ge
 import os
@@ -43,11 +36,9 @@ import os
 from dotenv import dotenv_values
 
 config = dotenv_values(".env")  # config = {"USER": "foo", "EMAIL": "foo@example.org"}
-import schedule
 import time
 
 import time
-import atexit
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import send_from_directory
 import requests
@@ -59,11 +50,6 @@ app = Flask(__name__)
 def MainFunction():
     #รับ intent จาก Dailogflow
     question_from_dailogflow_raw = request.get_json(silent=True, force=True)
-    # print(date.today().strftime("HH:MM"))
-    if date.today().strftime("HH:MM") == "16:00":
-      print('now 16.00')
-
-    #เรียกใช้ฟังก์ชัน generate_answer เพื่อแยกส่วนของคำถาม
     answer_from_bot = generating_answer(question_from_dailogflow_raw)
     #ตอบกลับไปที่ Dailogflow
     r = make_response(answer_from_bot)
@@ -174,12 +160,12 @@ def MessageReply(token):
         
   accessToken = os.getenv("ACCESSTOKEN")
 
-  headers = {
+  headerss = {
               'content-type': 'application/json',
               'Authorization':'Bearer '+str(accessToken),
               # 'X-Line-Retry-Key':str((uuid.uuid1()))
               } 
-  r = requests.post(urls, data=json.dumps(payload), headers=headers)
+  r = requests.post(urls, data=json.dumps(payload), headers=headerss)
   print(r)
   
 #Flask
@@ -197,15 +183,6 @@ def SelectValid(user_id):
                 else : 
                     x = result
                     return sum(x)
-
-
-
-
-
-
-
-
-
 def GetUser():
     select_Geet = "SELECT user_id FROM user_list_meter GROUP BY user_id"
     mycursor = db.cursor()
@@ -287,20 +264,14 @@ def CountInsertData(user_id):
           } 
         r = requests.post(urls, data=json.dumps(payload), headers=headers)
         print(r)
-
         print(xSchedule)
 
 def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
-
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30')
 scheduler.start()
-
-
-
-
 
 
 db =  mysql.connector.connect(
@@ -359,72 +330,21 @@ def getReportBymonth(respond_dict):
     mycursor.execute(select_m2, { 'user_id': user_id ,'group1': d1 ,'group2':d2} )
     myresult_m2 = mycursor.fetchall()
     result = monthrange(myresult_m2)
-
-    
     answer_function = 'ช่วงเดือน '+ calGroup(Smonth)  +' - '+ calGroup(Emonth)+ '\nใช้ทั้งหมด '+ str(result)+' หน่วย'
     return answer_function
-
-# def Getmont(month):
-#     if month == "มกราคม":
-#         text = "01" 
-#         return text
-#     elif month == "กุมภาพันธ์":
-#         text = "02" 
-#         return text 
-#     elif month == "มีนาคม":
-#         text = "03" 
-#         return text   
-#     elif month == "เมษายน":
-#         text = "04" 
-#         return text   
-#     elif month == "พฤษภาคม":
-#         text = "05" 
-#         return text   
-#     elif month == "มิถุนายน":
-#         text = "06" 
-#         return text   
-#     elif month == "กรกฎาคม":
-#         text = "07" 
-#         return text   
-#     elif month == "สิงหาคม":
-#         text = "08" 
-#         return text   
-#     elif month == "กันยายน":
-#         text = "09" 
-#         return text   
-#     elif month == "ตุลาคม":
-#         text = "10" 
-#         return text   
-#     elif month == "พฤศจิกายน":
-#         text = "11" 
-#         return text   
-#     elif month == "ธันวาคม":
-#         text = "12" 
-#         return text   
-#     else :
-#         text = "99" 
-#         return text 
 
 def getReportDay(respond_dict):
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
     text_month = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["date-time.original"]
     Sd = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["date-time"]["startDate"]
     Ed = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["date-time"]["endDate"]
-
-    # datamonth = Getmont(text_month)
     d1 = date.today().strftime("%Y")
-    # month = datamonth
-# +'/'+
     print('d1---------->',d1)
-    # print('month---------->',datamonth)
     if text_month != False :
         mycursor = db.cursor()
        
         selectDay= "SELECT meter_value,create_at FROM `user_list_meter` WHERE user_id = %(user_id)s AND (create_at BETWEEN %(Sd)s AND %(Ed)s);"
-        # selectDay= "SELECT meter_value,create_at FROM `user_list_meter` WHERE user_id = %(user_id)s  AND YEAR(create_at) = %(year)s AND MONTH(create_at) = %(month)s;"
         mycursor.execute(selectDay, { 'user_id': user_id ,'Sd': Sd ,'Ed': Ed} )
-
-        # mycursor.execute(selectDay, { 'user_id': user_id ,'year': d1 ,'month': month} )
         resDays = mycursor.fetchall()
         print(len(resDays))
         x=FormatStr(resDays)
@@ -433,26 +353,6 @@ def getReportDay(respond_dict):
           if i != len(resDays) :
             i=i+1
         return  str(x)
-          # print(FormatStr(resDays[i]))
-          
-          
-          # text = str(resDays[i][1])+" " + str(resDays[i][0]) 
-        # while i < len(resDays)  :
-        #  print(resDays[i])
-        #  i=i+1
-         
-          
-      # for x in resDays :
-
-      #   print('resDays---------->',x)
-      #   print('d1---------->',d1)
-      #   print('month---------->',month)
-      #   text1 =  str(x[4]) +"ใช้ทั้งหมด "+ str(x[2]) + " หน่วย"
-      # x='ทดสอบ'
-        # return 0
-
-
-    
 
 def FormatStr(data):
     if not all(data) == True : 
@@ -488,9 +388,7 @@ def getReport_mounth(respond_dict):
     d11 = date.today().strftime("%Y")+'/11'
     d12 = date.today().strftime("%Y")+'/12'
     mycursor = db.cursor()
-    
 
-    # mycursor.execute()
 
     select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
     select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
@@ -563,9 +461,6 @@ def getReport_mounth(respond_dict):
  
     answer_functionx = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["message"]["text"]
     if answer_functionx == "ข้อมูลรายเดือน" :
-    #    m1 = sum_meter(myresultSUM) - 19
-    # # sum = 0
-    #    print(m1)
        result1 = m1_x1
        result2 = m2_x1
        result3 = m3_x1
@@ -604,8 +499,6 @@ def getReport_mounth(respond_dict):
           textMax = "เดือน ธ.ค."
        elif xMax == result12:
           textMax = "เดือน ก.พ."
-
-
        text1 = "เดือน ม.ค. ใช้ทั้งหมด "+ str(result1) + " หน่วย"
        text2 = "เดือน ก.พ. ใช้ทั้งหมด "+ str(result2) + " หน่วย"
        text3 = "เดือน มี.ค. ใช้ทั้งหมด "+ str(result3) + " หน่วย"
@@ -619,16 +512,11 @@ def getReport_mounth(respond_dict):
        text11 = "เดือน พ.ย. ใช้ทั้งหมด "+ str(result11) + " หน่วย"
        text12 = "เดือน ธ.ค. ใช้ทั้งหมด "+ str(result12) + " หน่วย"
        answer_function = "ข้อมูลมิเตอร์ตั้งแต่ เดือน ม.ค. จนถึง ธ.ค. ของปีนี้ คือ \n" + text1 +"\n" + text2+"\n" + text3+"\n" + text4+"\n" + text5+"\n" + text6+"\n" + text7+"\n" + text8+"\n" + text9+"\n" + text10+"\n" + text11+"\n" + text12 +"\n" +"เดือนที่มีการใช้ไฟฟ้ามากที่สุดคือ " + "\n"+str(textMax) +" ใช้ "+str(xMax)+" หน่วย "
-       
-    # meter_value = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"]
-    # user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
+
     d1 = date.today().strftime("%Y/%m/%d")
-    token = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["replyToken"]
-    # sheet.insert_row([meter_value,d1],2)
-    # connect(user_id,meter_value,token,d1)
     return  answer_function 
 
-    # END OF ADMIN CONVERSATION HANDLER TO BROADCAST MESSAGE
+
 
  
 if __name__ == '__main__':
