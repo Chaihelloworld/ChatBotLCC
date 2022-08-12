@@ -46,7 +46,13 @@ config = dotenv_values(".env")  # config = {"USER": "foo", "EMAIL": "foo@example
 import schedule
 import time
 
+import time
+import atexit
 
+
+from apscheduler.schedulers.background import BackgroundScheduler
+# Shut down the scheduler when exiting the app
+# atexit.register(lambda: scheduler.shutdown())
 from flask import send_from_directory
 import requests
 
@@ -141,9 +147,9 @@ def menu_recormentation(respond_dict): #ฟังก์ชั่นสำหร�
     print('int(meter_value)---->',int(meter_value))
     print('int(valid)---->',int(ylist))
     if int(meter_value) < int(ylist) :
-       answer_function = "ข้อมูลน้อยกว่า ค่าในระบบกรุณากรอกข้อมูลใหม่" 
+       answer_function = "ข้อมูลน้อยกว่า ค่าในระบบกรุณากรอกข้อมูลใหม่ \n **โปรดเลือกเมนู > บันทึกข้อมูล" 
     elif int(meter_value) > (int(ylist)+ int(50)):
-       answer_function = "ค่ามิเตอร์ที่บันทึก มากกว่า 50 หน่วยกรุณาตรวจสอบใหม่อีกครั้ง" 
+       answer_function = "ค่ามิเตอร์ที่บันทึก มากกว่า 50 หน่วยกรุณาตรวจสอบใหม่อีกครั้ง \n **โปรดเลือกเมนู > บันทึกข้อมูล" 
     else :
 
        connect(user_id,meter_value,group_month,d1)
@@ -171,6 +177,98 @@ def SelectValid(user_id):
                 else : 
                     x = result
                     return sum(x)
+
+
+
+
+
+
+
+
+
+def GetUser():
+    select_Geet = "SELECT user_id FROM user_list_meter GROUP BY user_id"
+    mycursor = db.cursor()
+    mycursor.execute(select_Geet ,{})
+    Getdata = mycursor.fetchall()
+    print(len(Getdata))
+    # print(FormatStr(Getdata[0]),FormatStr(Getdata[1]),FormatStr(Getdata[2]))
+    i = 0
+    CountInsertData("U377cab5da50240870dab5b689b463b32")
+    while i < len(Getdata)  :
+        
+        print(FormatStr(Getdata[i]))
+        i=i+1
+    # for x in Getdata :
+    #     # lis = FormatStr(x)
+    #     lis = 'U377cab5da50240870dab5b689b463b32'
+    #     print(lis)
+    # #   CountInsertData
+    #     CountInsertData(lis)
+    
+    
+
+def FormatStr(data):
+    if data is not None:
+        for xs in data:
+                result = xs
+                if not all(result) == True : 
+                    return 0
+                else : 
+                    x = result
+                    return str(x)
+
+
+    # START OF ADMIN CONVERSATION HANDLER TO REPLACE THE DATABASE 
+def CountInsertData(user_id):
+    # print(datetime.now().strftime("%H:%M:%S"))
+    xDate = datetime.now().strftime("%H:%M:%S")
+    select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
+    mycursor = db.cursor()
+    #  m2
+    mycursor.execute(select_insert, { 'user_id': user_id ,'date': date.today().strftime("%Y%m%d") } )
+    select_insertFetch = mycursor.fetchall()
+    x = sumMin(select_insertFetch)
+    print('in fn---------> ',x)
+    if x == 0:
+        urls = 'https://api.line.me/v2/bot/message/broadcast'
+        linepayload = {} 
+        linepayload['type'] = 'sticker'
+        linepayload['packageId'] = '789'
+        linepayload['stickerId'] = '10858'
+
+
+        payload = {
+        "messages":[
+            {
+                "type":"text",
+                "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ "
+            },
+                  linepayload
+        ],
+      
+        }
+        accessToken = os.getenv("ACCESSTOKEN");
+
+        headers = {
+          'content-type': 'application/json',
+          'Authorization':'Bearer '+str(accessToken),
+          'X-Line-Retry-Key':str((uuid.uuid1()))
+          } 
+        r = requests.post(urls, data=json.dumps(payload), headers=headers)
+        print(r)
+
+        print(x)
+
+def print_date_time():
+    print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=GetUser, trigger="cron", hour='00', minute='01')
+scheduler.start()
+
+
 
 
 
