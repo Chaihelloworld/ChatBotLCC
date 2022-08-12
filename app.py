@@ -9,6 +9,8 @@ import json
 from operator import ge
 import os
 from re import X
+from tkinter import W
+from tokenize import Number
 from types import NoneType
 from typing import Any
 from flask import Flask
@@ -99,8 +101,10 @@ def generating_answer(question_from_dailogflow_dict):
     elif intent_group_question_str == 'reportMonth': 
         answer_str = getReport_mounth(question_from_dailogflow_dict)
     
-    elif intent_group_question_str == 'GetselectMonthMeter': 
+    elif intent_group_question_str == 'คำนวณช่วงเดือน': 
         answer_str = getReportBymonth(question_from_dailogflow_dict)
+    elif intent_group_question_str == 'dailyReportCal': 
+        answer_str = getReportDay(question_from_dailogflow_dict)
 
     else: answer_str = "ผมไม่เข้าใจ คุณต้องการอะไร"
     
@@ -151,16 +155,39 @@ def menu_recormentation(respond_dict): #ฟังก์ชั่นสำหร�
     elif int(meter_value) > (int(ylist)+ int(50)):
        answer_function = "ค่ามิเตอร์ที่บันทึก มากกว่า 50 หน่วยกรุณาตรวจสอบใหม่อีกครั้ง \n **โปรดเลือกเมนู > บันทึกข้อมูล" 
     else :
-
        connect(user_id,meter_value,group_month,d1)
        answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
+       MessageReply(token)
 
-   
-
-# dd/mm/YY
-    
     return  answer_function 
   
+def MessageReply(token):
+  urls = 'https://api.line.me/v2/bot/message/reply'
+  linepayload = {} 
+  linepayload['type'] = 'sticker'
+  linepayload['packageId'] = '789'
+  linepayload['stickerId'] = '10869'
+  payload = {
+        "replyToken":token,
+        "messages":[
+            {
+                "type":"text",
+                "text":" บันทึกค่าของวันนี้เรียบร้อยแล้ว \n เก่งมากๆค่า \n \n เพื่อการใช้งานที่มีประสิทธิภาพสูงสุด \n กรุณาบันทึกค่าอย่างต่อเนื่องนะคะ "
+            },
+                  linepayload
+        ],
+      
+        }
+        
+  accessToken = os.getenv("ACCESSTOKEN")
+
+  headers = {
+              'content-type': 'application/json',
+              'Authorization':'Bearer '+str(accessToken),
+              # 'X-Line-Retry-Key':str((uuid.uuid1()))
+              } 
+  r = requests.post(urls, data=json.dumps(payload), headers=headers)
+  print(r)
   
 #Flask
 def SelectValid(user_id):
@@ -194,19 +221,28 @@ def GetUser():
     print(len(Getdata))
     # print(FormatStr(Getdata[0]),FormatStr(Getdata[1]),FormatStr(Getdata[2]))
     i = 0
-    CountInsertData("U377cab5da50240870dab5b689b463b32")
+    # CountInsertData("U377cab5da50240870dab5b689b463b32")
     while i < len(Getdata)  :
         
         print(FormatStr(Getdata[i]))
         i=i+1
-    # for x in Getdata :
-    #     # lis = FormatStr(x)
-    #     lis = 'U377cab5da50240870dab5b689b463b32'
-    #     print(lis)
-    # #   CountInsertData
-    #     CountInsertData(lis)
+        
+    for x in Getdata :
+        lis = FormatStr(x)
+        # lis = 'U377cab5da50240870dab5b689b463b32'
+        print(lis)
+    #   CountInsertData
+        CountInsertData(lis)
     
-    
+def sumMin(data):
+    if data is not None:
+        for xs in data:
+                result = xs
+                if not all(result) == True : 
+                    return 0
+                else : 
+                    x = result
+                    return sum(x)    
 
 def FormatStr(data):
     if data is not None:
@@ -228,14 +264,15 @@ def CountInsertData(user_id):
     #  m2
     mycursor.execute(select_insert, { 'user_id': user_id ,'date': date.today().strftime("%Y%m%d") } )
     select_insertFetch = mycursor.fetchall()
-    x = sumMin(select_insertFetch)
-    print('in fn---------> ',x)
-    if x == 0:
+    print('select_insertFetch--------------->',select_insertFetch)
+    xSchedule = sumMin(select_insertFetch)
+    print('in fn---------> ',xSchedule)
+    if xSchedule == None:
         urls = 'https://api.line.me/v2/bot/message/broadcast'
         linepayload = {} 
         linepayload['type'] = 'sticker'
         linepayload['packageId'] = '789'
-        linepayload['stickerId'] = '10858'
+        linepayload['stickerId'] = '10866'
 
 
         payload = {
@@ -258,14 +295,14 @@ def CountInsertData(user_id):
         r = requests.post(urls, data=json.dumps(payload), headers=headers)
         print(r)
 
-        print(x)
+        print(xSchedule)
 
 def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='00', minute='01')
+scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30')
 scheduler.start()
 
 
@@ -289,15 +326,7 @@ def connect(userId,data,group_month,date):
     db.commit()
     return  val 
 
-def sumMin(data):
-    if data is not None:
-        for xs in data:
-                result = xs
-                if not all(result) == True : 
-                    return 0
-                else : 
-                    x = result
-                    return sum(x)
+
 def monthrange(data):
      if data is not None:
         for xs in data:
@@ -342,6 +371,113 @@ def getReportBymonth(respond_dict):
     answer_function = 'ช่วงเดือน '+ calGroup(Smonth)  +' - '+ calGroup(Emonth)+ '\nใช้ทั้งหมด '+ str(result)+' หน่วย'
     return answer_function
 
+# def Getmont(month):
+#     if month == "มกราคม":
+#         text = "01" 
+#         return text
+#     elif month == "กุมภาพันธ์":
+#         text = "02" 
+#         return text 
+#     elif month == "มีนาคม":
+#         text = "03" 
+#         return text   
+#     elif month == "เมษายน":
+#         text = "04" 
+#         return text   
+#     elif month == "พฤษภาคม":
+#         text = "05" 
+#         return text   
+#     elif month == "มิถุนายน":
+#         text = "06" 
+#         return text   
+#     elif month == "กรกฎาคม":
+#         text = "07" 
+#         return text   
+#     elif month == "สิงหาคม":
+#         text = "08" 
+#         return text   
+#     elif month == "กันยายน":
+#         text = "09" 
+#         return text   
+#     elif month == "ตุลาคม":
+#         text = "10" 
+#         return text   
+#     elif month == "พฤศจิกายน":
+#         text = "11" 
+#         return text   
+#     elif month == "ธันวาคม":
+#         text = "12" 
+#         return text   
+#     else :
+#         text = "99" 
+#         return text 
+
+def getReportDay(respond_dict):
+    user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
+    text_month = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["date-time.original"]
+    Sd = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["date-time"]["startDate"]
+    Ed = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["date-time"]["endDate"]
+
+    # datamonth = Getmont(text_month)
+    d1 = date.today().strftime("%Y")
+    # month = datamonth
+# +'/'+
+    print('d1---------->',d1)
+    # print('month---------->',datamonth)
+    if text_month != False :
+        mycursor = db.cursor()
+       
+        selectDay= "SELECT meter_value,create_at FROM `user_list_meter` WHERE user_id = %(user_id)s AND (create_at BETWEEN %(Sd)s AND %(Ed)s);"
+        # selectDay= "SELECT meter_value,create_at FROM `user_list_meter` WHERE user_id = %(user_id)s  AND YEAR(create_at) = %(year)s AND MONTH(create_at) = %(month)s;"
+        mycursor.execute(selectDay, { 'user_id': user_id ,'Sd': Sd ,'Ed': Ed} )
+
+        # mycursor.execute(selectDay, { 'user_id': user_id ,'year': d1 ,'month': month} )
+        resDays = mycursor.fetchall()
+        print(len(resDays))
+        x=FormatStr(resDays)
+        i=0
+        while i < len(resDays)  :
+          if i != len(resDays) :
+            i=i+1
+        return  str(x)
+          # print(FormatStr(resDays[i]))
+          
+          
+          # text = str(resDays[i][1])+" " + str(resDays[i][0]) 
+        # while i < len(resDays)  :
+        #  print(resDays[i])
+        #  i=i+1
+         
+          
+      # for x in resDays :
+
+      #   print('resDays---------->',x)
+      #   print('d1---------->',d1)
+      #   print('month---------->',month)
+      #   text1 =  str(x[4]) +"ใช้ทั้งหมด "+ str(x[2]) + " หน่วย"
+      # x='ทดสอบ'
+        # return 0
+
+
+    
+
+def FormatStr(data):
+    if not all(data) == True : 
+        return 0
+    else : 
+      x = []  
+      i=0
+      while i < len(data):
+        x.append (""+str(data[i][1])+ " ใช้ไฟ "  + str(data[i][0])+ " หน่วย "  ) 
+        print(x)
+        i=i+1
+
+      # text = '\n'.join('{}: {}'.format(*val) for val in enumerate(x))
+      
+      if len(data) == 0 :
+        x.append(str('ไม่พบข้อมูล'))
+      text = ' \n'.join(map(str, x))
+      return str(text)                                                                             
 
 def getReport_mounth(respond_dict):
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
@@ -449,6 +585,33 @@ def getReport_mounth(respond_dict):
        result10 = m10_x1
        result11 = m11_x1
        result12 = m12_x1
+       xMax = max(result1,result2,result3,result4,result5,result6,result7,result8,result9,result10,result11,result12)
+       print(xMax)
+       if xMax == result1:
+          textMax = "เดือน ม.ค."
+       elif xMax == result2:
+          textMax = "เดือน ก.พ."
+       elif xMax == result3:
+          textMax = "เดือน มี.ค."
+       elif xMax == result4:
+          textMax = "เดือน เม.ย."
+       elif xMax == result5:
+          textMax = "เดือน พ.ค."
+       elif xMax == result6:
+          textMax = "เดือน มิ.ย."
+       elif xMax == result7:
+          textMax = "เดือน ก.ค."
+       elif xMax == result8:
+          textMax = "เดือน ส.ค."
+       elif xMax == result9:
+          textMax = "เดือน ก.ย."
+       elif xMax == result10:
+          textMax = "เดือน พ.ย."
+       elif xMax == result11:
+          textMax = "เดือน ธ.ค."
+       elif xMax == result12:
+          textMax = "เดือน ก.พ."
+
 
        text1 = "เดือน ม.ค. ใช้ทั้งหมด "+ str(result1) + " หน่วย"
        text2 = "เดือน ก.พ. ใช้ทั้งหมด "+ str(result2) + " หน่วย"
@@ -462,7 +625,7 @@ def getReport_mounth(respond_dict):
        text10 = "เดือน ต.ค. ใช้ทั้งหมด "+ str(result10) + " หน่วย"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
        text11 = "เดือน พ.ย. ใช้ทั้งหมด "+ str(result11) + " หน่วย"
        text12 = "เดือน ธ.ค. ใช้ทั้งหมด "+ str(result12) + " หน่วย"
-       answer_function = "ข้อมูลมิเตอร์ตั้งแต่ เดือน ม.ค. จนถึง ธ.ค. ของปีนี้ คือ \n" + text1 +"\n" + text2+"\n" + text3+"\n" + text4+"\n" + text5+"\n" + text6+"\n" + text7+"\n" + text8+"\n" + text9+"\n" + text10+"\n" + text11+"\n" + text12
+       answer_function = "ข้อมูลมิเตอร์ตั้งแต่ เดือน ม.ค. จนถึง ธ.ค. ของปีนี้ คือ \n" + text1 +"\n" + text2+"\n" + text3+"\n" + text4+"\n" + text5+"\n" + text6+"\n" + text7+"\n" + text8+"\n" + text9+"\n" + text10+"\n" + text11+"\n" + text12 +"\n" +"เดือนที่มีการใช้ไฟฟ้ามากที่สุดคือ " + "\n"+str(textMax) +" ใช้ "+str(xMax)+" หน่วย "
        
     # meter_value = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"]
     # user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
