@@ -43,24 +43,17 @@ import os
 from dotenv import dotenv_values
 
 config = dotenv_values(".env")  # config = {"USER": "foo", "EMAIL": "foo@example.org"}
-
-
 import schedule
 import time
 
 import time
 import atexit
-
-
 from apscheduler.schedulers.background import BackgroundScheduler
-# Shut down the scheduler when exiting the app
-# atexit.register(lambda: scheduler.shutdown())
 from flask import send_from_directory
 import requests
 
 app = Flask(__name__)
 @app.route('/favicon.ico')
-
 @app.route('/', methods=['POST']) 
 
 def MainFunction():
