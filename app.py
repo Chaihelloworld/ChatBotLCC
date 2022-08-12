@@ -1,11 +1,6 @@
 import json
 from operator import ge
 import os
-from re import X
-from tkinter import W
-from tokenize import Number
-from types import NoneType
-from typing import Any
 from flask import Flask
 from flask import request
 from flask import make_response
@@ -15,7 +10,6 @@ from datetime import timedelta
 
 import uuid
 
-#----Additional from previous file----
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pyparsing import empty
@@ -48,12 +42,10 @@ app = Flask(__name__)
 @app.route('/', methods=['POST']) 
 
 def MainFunction():
-    #รับ intent จาก Dailogflow
     question_from_dailogflow_raw = request.get_json(silent=True, force=True)
     answer_from_bot = generating_answer(question_from_dailogflow_raw)
-    #ตอบกลับไปที่ Dailogflow
     r = make_response(answer_from_bot)
-    r.headers['Content-Type'] = 'application/json' #การตั้งค่าประเภทของข้อมูลที่จะตอบกลับไป
+    r.headers['Content-Type'] = 'application/json' 
 
     return r
 
@@ -67,12 +59,9 @@ def home_view():
   
 def generating_answer(question_from_dailogflow_dict):
 
-    #Print intent ที่รับมาจาก Dailogflow
     print(json.dumps(question_from_dailogflow_dict, indent=4 ,ensure_ascii=False))
 
-    #เก็บต่า ชื่อของ intent ที่รับมาจาก Dailogflow
     intent_group_question_str = question_from_dailogflow_dict["queryResult"]["intent"]["displayName"] 
-    #ลูปตัวเลือกของฟังก์ชั่นสำหรับตอบคำถามกลับ
     if intent_group_question_str == 'คำนวณ':    
 
         answer_str = menu_recormentation(question_from_dailogflow_dict)
@@ -87,10 +76,8 @@ def generating_answer(question_from_dailogflow_dict):
 
     else: answer_str = "ผมไม่เข้าใจ คุณต้องการอะไร"
     
-    #สร้างการแสดงของ dict 
     answer_from_bot = {"fulfillmentText": answer_str}
     
-    #แปลงจาก dict ให้เป็น JSON
     answer_from_bot = json.dumps(answer_from_bot, indent=4) 
     
     return answer_from_bot
@@ -106,14 +93,13 @@ def initText(data):
                     x = "เมื่อวานใช้ไฟ ทั้งหมด"+str(y)+"หน่วย"
 
                     return x
-def menu_recormentation(respond_dict): #ฟังก์ชั่นสำหรับเมนูแนะนำ
+def menu_recormentation(respond_dict): 
     
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
 
     select_today = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at BETWEEN %(d1)s AND %(d2)s;"
     d1 = date.today().strftime("%Y/%m/%d")
     yesterday = date.today() - timedelta(days = 1)
-    # print(yesterday)
     mycursor = db.cursor()
     mycursor.execute(select_today, { 'user_id': user_id ,'d1': yesterday.strftime("%Y/%m/%d"),'d2':d1  })
     
@@ -163,7 +149,6 @@ def MessageReply(token):
   headerss = {
               'content-type': 'application/json',
               'Authorization':'Bearer '+str(accessToken),
-              # 'X-Line-Retry-Key':str((uuid.uuid1()))
               } 
   r = requests.post(urls, data=json.dumps(payload), headers=headerss)
   print(r)
@@ -189,9 +174,7 @@ def GetUser():
     mycursor.execute(select_Geet ,{})
     Getdata = mycursor.fetchall()
     print(len(Getdata))
-    # print(FormatStr(Getdata[0]),FormatStr(Getdata[1]),FormatStr(Getdata[2]))
     i = 0
-    # CountInsertData("U377cab5da50240870dab5b689b463b32")
     while i < len(Getdata)  :
         
         print(FormatStr(Getdata[i]))
@@ -199,9 +182,7 @@ def GetUser():
         
     for x in Getdata :
         lis = FormatStr(x)
-        # lis = 'U377cab5da50240870dab5b689b463b32'
         print(lis)
-    #   CountInsertData
         CountInsertData(lis)
     
 def sumMin(data):
@@ -225,9 +206,7 @@ def FormatStr(data):
                     return str(x)
 
 
-    # START OF ADMIN CONVERSATION HANDLER TO REPLACE THE DATABASE 
 def CountInsertData(user_id):
-    # print(datetime.now().strftime("%H:%M:%S"))
     xDate = datetime.now().strftime("%H:%M:%S")
     select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
     mycursor = db.cursor()
@@ -269,9 +248,6 @@ def CountInsertData(user_id):
 def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30')
-scheduler.start()
 
 
 db =  mysql.connector.connect(
@@ -299,7 +275,6 @@ def monthrange(data):
                     return 0
                 else : 
                     x = result
-                    # print(x)
                     return sum(x)
 def calDay(data):
     if data == 1 or 3 or 5 or 7 or 8 or 10 or 12:
@@ -326,7 +301,6 @@ def getReportBymonth(respond_dict):
     d1 = date.today().strftime("%Y")+'/'+calGroup(Smonth)
     d2 = date.today().strftime("%Y")+'/'+calGroup(Emonth)
     mycursor = db.cursor()
-    #  m2
     mycursor.execute(select_m2, { 'user_id': user_id ,'group1': d1 ,'group2':d2} )
     myresult_m2 = mycursor.fetchall()
     result = monthrange(myresult_m2)
@@ -364,9 +338,7 @@ def FormatStr(data):
         x.append (""+str(data[i][1])+ " ใช้ไฟ "  + str(data[i][0])+ " หน่วย "  ) 
         print(x)
         i=i+1
-
-      # text = '\n'.join('{}: {}'.format(*val) for val in enumerate(x))
-      
+      print('\n'.join('{}: {}'.format(*val) for val in enumerate(x)))
       if len(data) == 0 :
         x.append(str('ไม่พบข้อมูล'))
       text = ' \n'.join(map(str, x))
@@ -374,7 +346,6 @@ def FormatStr(data):
 
 def getReport_mounth(respond_dict):
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
-    
     d1 = date.today().strftime("%Y")+'/01'
     d2 = date.today().strftime("%Y")+'/02'
     d3 = date.today().strftime("%Y") +'/03'
@@ -388,8 +359,6 @@ def getReport_mounth(respond_dict):
     d11 = date.today().strftime("%Y")+'/11'
     d12 = date.today().strftime("%Y")+'/12'
     mycursor = db.cursor()
-
-
     select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
     select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
     select_m3 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
@@ -404,45 +373,26 @@ def getReport_mounth(respond_dict):
     select_m12 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
     mycursor.execute(select_m1, { 'user_id': user_id ,'group': d1 } )
     myresult_m1 = mycursor.fetchall()
-
-    #  m2
     mycursor.execute(select_m2, { 'user_id': user_id ,'group': d2 } )
     myresult_m2 = mycursor.fetchall()
-
-    #  m3
     mycursor.execute(select_m3, { 'user_id': user_id ,'group': d3 } )
     myresult_m3 = mycursor.fetchall()
-
-      #  m4
     mycursor.execute(select_m4, { 'user_id': user_id ,'group': d4 } )
     myresult_m4 = mycursor.fetchall()
-
-      #  m5
     mycursor.execute(select_m5, { 'user_id': user_id ,'group': d5 } )
     myresult_m5 = mycursor.fetchall()
-    
-      #  m6
     mycursor.execute(select_m6, { 'user_id': user_id ,'group': d6 } )
     myresult_m6 = mycursor.fetchall()
-
-      #  m7
     mycursor.execute(select_m7, { 'user_id': user_id ,'group': d7 } )
     myresult_m7 = mycursor.fetchall()
-
-      #  m2
     mycursor.execute(select_m8, { 'user_id': user_id ,'group': d8 } )
     myresult_m8 = mycursor.fetchall()
-
-      #  m2
     mycursor.execute(select_m9, { 'user_id': user_id ,'group': d9 } )
     myresult_m9 = mycursor.fetchall()
-      #  m2
     mycursor.execute(select_m10, { 'user_id': user_id ,'group': d10 } )
     myresult_m10 = mycursor.fetchall()
-      #  m2
     mycursor.execute(select_m11, { 'user_id': user_id ,'group': d11 } )
     myresult_m11 = mycursor.fetchall()
-      #  m2
     mycursor.execute(select_m12, { 'user_id': user_id ,'group': d12 } )
     myresult_m12 = mycursor.fetchall()
     
@@ -519,13 +469,15 @@ def getReport_mounth(respond_dict):
 
 
  
- 
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000) )
     print("Starting app on port %d" % port)
     app.run(debug=False, port=port, host='0.0.0.0', threaded=True)
 
-
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30')
+scheduler.start()
 
 
 
