@@ -62,7 +62,7 @@ def generating_answer(question_from_dailogflow_dict):
     print(json.dumps(question_from_dailogflow_dict, indent=4 ,ensure_ascii=False))
 
     intent_group_question_str = question_from_dailogflow_dict["queryResult"]["intent"]["displayName"] 
-    if intent_group_question_str == 'คำนวณ':    
+    if intent_group_question_str == 'คำนวณ' or intent_group_question_str =='CFmeter':    
 
         answer_str = menu_recormentation(question_from_dailogflow_dict)
        
@@ -73,6 +73,7 @@ def generating_answer(question_from_dailogflow_dict):
         answer_str = getReportBymonth(question_from_dailogflow_dict)
     elif intent_group_question_str == 'dailyReportCal': 
         answer_str = getReportDay(question_from_dailogflow_dict)
+
 
     else: answer_str = "ผมไม่เข้าใจ คุณต้องการอะไร"
     
@@ -87,46 +88,109 @@ def initText(data):
         for xs in data:
                 result = xs
                 if not all(result) == True : 
-                    return "ไม่มีค่าที่บันทึกของเมื่อวาน"
+                    return " ไม่มีค่าที่บันทึกของเมื่อวาน"
                 else : 
                     y=sum(result)
-                    x = "เมื่อวานใช้ไฟ ทั้งหมด"+str(y)+"หน่วย"
+                    x = " เมื่อวานใช้ไฟ ทั้งหมด"+str(y)+"หน่วย"
 
                     return x
 def menu_recormentation(respond_dict): 
-    
+    pots = respond_dict["queryResult"]["intent"]["displayName"]
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
-
     select_today = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at BETWEEN %(d1)s AND %(d2)s;"
     d1 = date.today().strftime("%Y/%m/%d")
     yesterday = date.today() - timedelta(days = 1)
     mycursor = db.cursor()
     mycursor.execute(select_today, { 'user_id': user_id ,'d1': yesterday.strftime("%Y/%m/%d"),'d2':d1  })
-    
+            
     myresult = mycursor.fetchall()
     xlist = initText(myresult)
-    ylist = SelectValid(user_id)
-    meter_value = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"]
     
+            
     token = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["replyToken"]
     group_month = date.today().strftime("%Y/%m")
-    sheet.insert_row([meter_value,d1],2)
-    
-    print('---->',ylist,'meter__--->',meter_value)
-    print('int(meter_value)---->',int(meter_value))
-    print('int(valid)---->',int(ylist))
-    if int(meter_value) < int(ylist) :
-       answer_function = "ข้อมูลน้อยกว่า ค่าในระบบกรุณากรอกข้อมูลใหม่ \n **โปรดเลือกเมนู > บันทึกข้อมูล" 
-    elif int(meter_value) > (int(ylist)+ int(50)):
-       answer_function = "ค่ามิเตอร์ที่บันทึก มากกว่า 50 หน่วยกรุณาตรวจสอบใหม่อีกครั้ง \n **โปรดเลือกเมนู > บันทึกข้อมูล" 
-    else :
-       connect(user_id,meter_value,group_month,d1)
-       answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
-       MessageReply(token)
 
-    return  answer_function 
+    if pots == "CFmeter":
+        xhead = respond_dict["queryResult"]["outputContexts"][0]["parameters"]["meter.original"]
+        connect(user_id,xhead,group_month,d1)
+        MessageReply(token,xlist)
+        # return xhead
+    else:
+            meter_value = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"]
+            ylist = SelectValid(user_id)
+            sheet.insert_row([meter_value,d1],2)
+            respond_dictQ = respond_dict["queryResult"]["intent"]["displayName"] 
+            print('---->',ylist,'meter__--->',meter_value)
+            print('int(meter_value)---->',int(meter_value))
+            print('int(valid)---->',int(ylist))
+           
+            if int(ylist) == 0 and int(meter_value) > (int(ylist)+ int(50)):
+                print('infn')
+                connect(user_id,meter_value,group_month,d1)
+                answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+"ขอบคุณสำหรับการบันทึกครั้งแรก ค่ะ"
+            elif int(meter_value) < int(ylist) :
+                answer_function = "ข้อมูลน้อยกว่า ค่าในระบบกรุณากรอกข้อมูลใหม่ \n **โปรดเลือกเมนู > บันทึกข้อมูล"
+            elif int(meter_value) > (int(ylist)+ int(50)):
+                answer_function = MessageConfirm(token);
+            # if respond_dictQ == "CFmeter":
+            #     print(int(meter_value))
+            
+            # elif int(ylist) == 0  :
+            #    connect(user_id,meter_value,group_month,d1)
+            #    answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
+            #    MessageReply(token,xlist)
+            else :
+                connect(user_id,meter_value,group_month,d1)
+                answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
+                MessageReply(token,xlist)
+            return  answer_function 
   
-def MessageReply(token):
+
+def MessageConfirm(token):
+        urls = 'https://api.line.me/v2/bot/message/reply'
+        linepayload = {} 
+        linepayload['type'] = 'sticker'
+        linepayload['packageId'] = '789'
+        linepayload['stickerId'] = '10869'
+        payload = {
+                "replyToken":token,
+                "messages":[
+                    {
+                       "type": "template",
+                        "altText": "ตรวจสอบใหม่อีกครั้ง",
+                        "template": {
+                            "type": "confirm",
+                            "text": "ค่ามิเตอร์ที่บันทึก มากกว่า 50 หน่วย ต้องการทำรายการต่อหรือไม่?",
+                            "actions": [
+                            {
+                                "type": "message",
+                                "label": "ใช่",
+                                "text": "ใช่"
+                            },
+                            {
+                                "type": "message",
+                                "label": "แก้ไข",
+                                "text": "แก้ไข"
+                            }
+                            ]
+                        }
+                        
+                    },
+                        # linepayload
+                ],
+            
+                }
+        
+        accessToken = os.getenv("ACCESSTOKEN")
+
+        headerss = {
+                    'content-type': 'application/json',
+                    'Authorization':'Bearer '+str(accessToken),
+                    } 
+        r = requests.post(urls, data=json.dumps(payload), headers=headerss)
+        print(r)      
+
+def MessageReply(token,xlist):
   urls = 'https://api.line.me/v2/bot/message/reply'
   linepayload = {} 
   linepayload['type'] = 'sticker'
@@ -137,7 +201,7 @@ def MessageReply(token):
         "messages":[
             {
                 "type":"text",
-                "text":" บันทึกค่าของวันนี้เรียบร้อยแล้ว \n เก่งมากๆค่า \n \n เพื่อการใช้งานที่มีประสิทธิภาพสูงสุด \n กรุณาบันทึกค่าอย่างต่อเนื่องนะคะ "
+                "text":" บันทึกค่าของวันนี้เรียบร้อยแล้ว \n เก่งมากๆค่า \n" "\n"+str(xlist)+ "\n\n เพื่อการใช้งานที่มีประสิทธิภาพสูงสุด \n กรุณาบันทึกค่าอย่างต่อเนื่องนะคะ "
             },
                   linepayload
         ],
@@ -248,6 +312,9 @@ def CountInsertData(user_id):
 def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=GetUser, trigger="cron", hour='21', minute='00')
+scheduler.start()
 
 
 db =  mysql.connector.connect(
@@ -475,9 +542,6 @@ if __name__ == '__main__':
     print("Starting app on port %d" % port)
     app.run(debug=False, port=port, host='0.0.0.0', threaded=True)
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30')
-scheduler.start()
 
 
 
