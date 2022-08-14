@@ -83,7 +83,7 @@ def generating_answer(question_from_dailogflow_dict):
     
     return answer_from_bot
 
-def initText(data):
+def initText(data,meter):
     if data is not None:
         for xs in data:
                 result = xs
@@ -91,39 +91,50 @@ def initText(data):
                     return " ไม่มีค่าที่บันทึกของเมื่อวาน"
                 else : 
                     y=sum(result)
-                    x = " เมื่อวานใช้ไฟ ทั้งหมด"+str(y)+"หน่วย"
-
+                    meters = (int(meter) - y)
+                    print('เมื่อวานใช้ไฟไป----------------->',meters)
+                    # meters = z-y
+                    x = " เมื่อวานใช้ไฟ ทั้งหมด "+str(meters)+" หน่วย"
+# "+str(meters)+"
                     return x
 def menu_recormentation(respond_dict): 
     pots = respond_dict["queryResult"]["intent"]["displayName"]
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
-    select_today = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at BETWEEN %(d1)s AND %(d2)s;"
+    select_today = "SELECT MAX(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at = %(d1)s;"
     d1 = date.today().strftime("%Y/%m/%d")
     yesterday = date.today() - timedelta(days = 1)
     mycursor = db.cursor()
     mycursor.execute(select_today, { 'user_id': user_id ,'d1': yesterday.strftime("%Y/%m/%d"),'d2':d1  })
-            
     myresult = mycursor.fetchall()
-    xlist = initText(myresult)
-    
-            
+    print('myresult1----------------------->',myresult)
+  
+
+    # select_today2 = "SELECT MAX(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at = %(d2)s;"
+    # d1 = date.today().strftime("%Y/%m/%d")
+    # yesterday = date.today() - timedelta(days = 1)
+    # mycursor = db.cursor()
+    # mycursor.execute(select_today2, { 'user_id': user_id ,'d2':d1  })   
+    # myresult2 = mycursor.fetchall()
+    # print('myresult2----------------------->',myresult2)  
     token = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["replyToken"]
     group_month = date.today().strftime("%Y/%m")
 
     if pots == "CFmeter":
         xhead = respond_dict["queryResult"]["outputContexts"][0]["parameters"]["meter.original"]
         connect(user_id,xhead,group_month,d1)
+        xlist = initText(myresult,xhead)
         MessageReply(token,xlist)
         # return xhead
     else:
             meter_value = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"]
             ylist = SelectValid(user_id)
             sheet.insert_row([meter_value,d1],2)
-            respond_dictQ = respond_dict["queryResult"]["intent"]["displayName"] 
+            respond_dictQ = respond_dict["queryResult"]["intent"]["displayName"]
+            xlist = initText(myresult,meter_value) 
             print('---->',ylist,'meter__--->',meter_value)
             print('int(meter_value)---->',int(meter_value))
             print('int(valid)---->',int(ylist))
-           
+            print('xlist------------------->',xlist)
             if int(ylist) == 0 and int(meter_value) > (int(ylist)+ int(50)):
                 print('infn')
                 connect(user_id,meter_value,group_month,d1)
@@ -140,6 +151,7 @@ def menu_recormentation(respond_dict):
             #    answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
             #    MessageReply(token,xlist)
             else :
+                print(xlist)
                 connect(user_id,meter_value,group_month,d1)
                 answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
                 MessageReply(token,xlist)
@@ -160,12 +172,12 @@ def MessageConfirm(token):
                         "altText": "ตรวจสอบใหม่อีกครั้ง",
                         "template": {
                             "type": "confirm",
-                            "text": "ค่ามิเตอร์ที่บันทึก มากกว่า 50 หน่วย ต้องการทำรายการต่อหรือไม่?",
+                            "text": "ค่ามิเตอร์ที่บันทึก มากกว่า 50 หน่วย คุณต้องการยืนยันบันทึกค่ามิเตอร์ ?",
                             "actions": [
                             {
                                 "type": "message",
-                                "label": "ใช่",
-                                "text": "ใช่"
+                                "label": "ยืนยัน",
+                                "text": "ยืนยัน"
                             },
                             {
                                 "type": "message",
@@ -383,8 +395,9 @@ def getReportDay(respond_dict):
     print('d1---------->',d1)
     if text_month != False :
         mycursor = db.cursor()
-       
-        selectDay= "SELECT meter_value,create_at FROM `user_list_meter` WHERE user_id = %(user_id)s AND (create_at BETWEEN %(Sd)s AND %(Ed)s);"
+        selectDay= "SELECT create_at, MAX(meter_value) FROM `user_list_meter` WHERE user_id =  %(user_id)s AND (create_at BETWEEN  %(Sd)s AND %(Ed)s) GROUP BY create_at;"
+        # selectDay= "SELECT meter_value,create_at FROM `user_list_meter` WHERE user_id = %(user_id)s AND (create_at BETWEEN %(Sd)s AND %(Ed)s);"
+        # SELECT create_at, MAX(meter_value) FROM `user_list_meter` WHERE user_id = "U377cab5da50240870dab5b689b463b32" AND (create_at BETWEEN "2022-08-01" AND "2022-08-31") GROUP BY create_at;
         mycursor.execute(selectDay, { 'user_id': user_id ,'Sd': Sd ,'Ed': Ed} )
         resDays = mycursor.fetchall()
         print(len(resDays))
@@ -399,11 +412,25 @@ def FormatStr(data):
     if not all(data) == True : 
         return 0
     else : 
-      x = []  
+      x = []
+      y = []
       i=0
-      while i < len(data):
-        x.append (""+str(data[i][1])+ " ใช้ไฟ "  + str(data[i][0])+ " หน่วย "  ) 
+      p = 1
+      j=0
+      while i < len(data) :
+        
+        while p < len(data):
+            xdata = (data[p][1] - data[j][1])
+            y.append(xdata)
+            print('data--Y =====>',y)
+            x.append (""+str(data[p][0])+ "ใช้ไฟ "  + str(y[j])+ " หน่วย ") 
+            p=p+1
+            j=j+1
+            print(y)
+        # x.append (""+str(data[i][0])+ " m. "  + str(data[i][1])+ " น. " + "ใช้ไป " +str((data[i][1]))) 
+        
         print(x)
+        
         i=i+1
       print('\n'.join('{}: {}'.format(*val) for val in enumerate(x)))
       if len(data) == 0 :
