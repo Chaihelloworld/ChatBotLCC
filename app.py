@@ -1,6 +1,7 @@
 import json
 from operator import ge
 import os
+from pickle import FALSE
 from flask import Flask
 from flask import request
 from flask import make_response
@@ -244,6 +245,8 @@ def SelectValid(user_id):
                 else : 
                     x = result
                     return sum(x)
+
+
 def GetUser():
     select_Geet = "SELECT user_id FROM user_list_meter GROUP BY user_id"
     mycursor = db.cursor()
@@ -251,15 +254,20 @@ def GetUser():
     Getdata = mycursor.fetchall()
     print(len(Getdata))
     i = 0
+    ar = []
     while i < len(Getdata)  :
-        
-        print(FormatStr(Getdata[i]))
+        # print('export------------------>',Getdata[i])
+        ar.append(','.join(Getdata[i]))
+        # print('export2------------------>',','.join(Getdata[i]))
+        # print('export2AR------------------>',ar)
+        # print(FormatStr(Getdata[i]))
+        CountInsertData(ar[i])
         i=i+1
         
-    for x in Getdata :
-        lis = FormatStr(x)
-        print(lis)
-        CountInsertData(lis)
+    # for x in Getdata :
+    #     lis = FormatStr(x)
+    #     # print(lis)
+    #     CountInsertData(lis)
     
 def sumMin(data):
     if data is not None:
@@ -271,15 +279,7 @@ def sumMin(data):
                     x = result
                     return sum(x)    
 
-def FormatStr(data):
-    if data is not None:
-        for xs in data:
-                result = xs
-                if not all(result) == True : 
-                    return 0
-                else : 
-                    x = result
-                    return str(x)
+
 
 
 def CountInsertData(user_id):
@@ -325,7 +325,8 @@ def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='21', minute='00')
+scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='00')
+# scheduler.add_job(func=GetUser, trigger="interval", seconds=10)
 scheduler.start()
 
 
