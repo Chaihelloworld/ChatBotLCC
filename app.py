@@ -129,15 +129,41 @@ def menu_recormentation(respond_dict):
     else:
             meter_value = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"]
             ylist = SelectValid(user_id)
-            sheet.insert_row([meter_value,d1],2)
+            # response = requests.get('https://api.line.me/v2/bot/profile/', params=headers)
+            # print(response.json())
+            # # payload = { }
+            accessToken = os.getenv("ACCESSTOKEN"); 
+            headers = {
+            'content-type': 'application/json',
+            'Authorization':'Bearer '+str(accessToken),
+            # 'X-Line-Retry-Key':str((uuid.uuid1()))
+            } 
+                       
+            textUser = ''.join(map(str, user_id))
+            respon = requests.get('https://api.line.me/v2/bot/profile/'+textUser,headers=headers)
+            # print('user_id---->มีค่า',respon.json())
+            data =respon.json()
+
+            # print('name--->',respon['displayName'])       
+            headers = {
+            'content-type': 'application/json',
+            'Authorization':'Bearer '+str(accessToken),
+            # 'X-Line-Retry-Key':str((uuid.uuid1()))
+            } 
+            # r = requests.get(urls, data=json.dumps(textUser), headers=headers)
+            # print(r)
+            # textUser = ''.join(map(str, user_id))
+            # print('user_id---->มีค่า',textUser)
+
+            sheet.insert_row([data['displayName'],meter_value,d1],2)
             respond_dictQ = respond_dict["queryResult"]["intent"]["displayName"]
             xlist = initText(myresult,meter_value) 
-            print('---->',ylist,'meter__--->',meter_value)
-            print('int(meter_value)---->',int(meter_value))
-            print('int(valid)---->',int(ylist))
-            print('xlist------------------->',xlist)
+            # print('---->',ylist,'meter__--->',meter_value)
+            # print('int(meter_value)---->',int(meter_value))
+            # print('int(valid)---->',int(ylist))
+            # print('xlist------------------->',xlist)
             if int(ylist) == 0 and int(meter_value) > (int(ylist)+ int(50)):
-                print('infn')
+                # print('infn')
                 connect(user_id,meter_value,group_month,d1)
                 answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+"ขอบคุณสำหรับการบันทึกครั้งแรก ค่ะ"
             elif int(meter_value) < int(ylist) :
