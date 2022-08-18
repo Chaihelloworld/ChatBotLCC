@@ -261,14 +261,96 @@ def GetUser():
         # print('export2------------------>',','.join(Getdata[i]))
         # print('export2AR------------------>',ar)
         # print(FormatStr(Getdata[i]))
-        CountInsertData(ar[i])
+        # CountInsertData(ar[i])
+        # print(ar[i])
+        TestFn(ar[i])
         i=i+1
         
     # for x in Getdata :
     #     lis = FormatStr(x)
     #     # print(lis)
     #     CountInsertData(lis)
-    
+def TestFn(data):
+    # print('dataTest---------------->',data)
+    i=0
+    x=[]
+    while i < len(data) :
+        select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
+        mycursor = db.cursor()
+        #  m2
+        mycursor.execute(select_insert, { 'user_id': data ,'date': date.today().strftime("%Y%m%d") } )
+        select_insertFetch = mycursor.fetchall()
+        setData = sumMin(select_insertFetch)
+        
+        # print('select_insertFetch--------------->',setData)
+        if setData is None:
+            x.append(data)
+            # urls = 'https://api.line.me/v2/bot/message/broadcast'
+            # linepayload = {} 
+            # linepayload['type'] = 'sticker'
+            # linepayload['packageId'] = '789'
+            # linepayload['stickerId'] = '10866'
+
+
+            # payload = {
+            # "messages":[
+            #     {
+            #         "type":"text",
+            #         "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ "
+            #     },
+            #         linepayload
+            # ],
+        
+            # }
+            # accessToken = os.getenv("ACCESSTOKEN");
+
+            # headers = {
+            # 'content-type': 'application/json',
+            # 'Authorization':'Bearer '+str(accessToken),
+            # 'X-Line-Retry-Key':str((uuid.uuid1()))
+            # } 
+            # r = requests.post(urls, data=json.dumps(payload), headers=headers)
+            # print(r)
+            print('-')
+            # print('isNull------->',setData ,'user',data)
+
+        elif setData:
+            print('-')
+            # print('is not Null------->',setData)
+
+        i=i+1
+        if x : 
+            
+            urls = 'https://api.line.me/v2/bot/message/multicast'
+            linepayload = {} 
+            linepayload['type'] = 'sticker'
+            linepayload['packageId'] = '789'
+            linepayload['stickerId'] = '10866' 
+            payload = {
+            "to": x,
+            "messages":[
+                {
+                    "type":"text",
+                    "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ "
+                },
+                    linepayload
+            ],
+        
+            }
+            accessToken = os.getenv("ACCESSTOKEN");            
+            print('x---->มีค่า',payload)
+            print('x---->มีค่า',x)
+                    
+            headers = {
+            'content-type': 'application/json',
+            'Authorization':'Bearer '+str(accessToken),
+            # 'X-Line-Retry-Key':str((uuid.uuid1()))
+            } 
+            r = requests.post(urls, data=json.dumps(payload), headers=headers)
+            print(r)
+        return
+
+
 def sumMin(data):
     if data is not None:
         for xs in data:
@@ -319,13 +401,13 @@ def CountInsertData(user_id):
           } 
         r = requests.post(urls, data=json.dumps(payload), headers=headers)
         print(r)
-        print(xSchedule)
+        # print(xSchedule)
 
 def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='00')
+scheduler.add_job(func=GetUser, trigger="cron", hour='09', minute='30')
 # scheduler.add_job(func=GetUser, trigger="interval", seconds=10)
 scheduler.start()
 
