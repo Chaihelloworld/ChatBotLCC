@@ -155,7 +155,7 @@ def menu_recormentation(respond_dict):
             # textUser = ''.join(map(str, user_id))
             # print('user_id---->มีค่า',textUser)
 
-            sheet.insert_row([data['displayName'],meter_value,d1],2)
+            
             respond_dictQ = respond_dict["queryResult"]["intent"]["displayName"]
             xlist = initText(myresult,meter_value) 
             # print('---->',ylist,'meter__--->',meter_value)
@@ -165,11 +165,13 @@ def menu_recormentation(respond_dict):
             if int(ylist) == 0 and int(meter_value) > (int(ylist)+ int(50)):
                 # print('infn')
                 connect(user_id,meter_value,group_month,d1)
+                sheet.insert_row([data['displayName'],meter_value,d1],2)
                 answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+"ขอบคุณสำหรับการบันทึกครั้งแรก ค่ะ"
             elif int(meter_value) < int(ylist) :
                 answer_function = "ข้อมูลน้อยกว่า ค่าในระบบกรุณากรอกข้อมูลใหม่ \n **โปรดเลือกเมนู > บันทึกข้อมูล"
             elif int(meter_value) > (int(ylist)+ int(50)):
                 answer_function = MessageConfirm(token);
+                sheet.insert_row([data['displayName'],meter_value,d1],2)
             # if respond_dictQ == "CFmeter":
             #     print(int(meter_value))
             
@@ -178,7 +180,8 @@ def menu_recormentation(respond_dict):
             #    answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
             #    MessageReply(token,xlist)
             else :
-                print(xlist)
+                # print(xlist)
+                sheet.insert_row([data['displayName'],meter_value,d1],2)
                 connect(user_id,meter_value,group_month,d1)
                 answer_function = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["meter.original"] + ' บันทึกค่าสำเร็จ' +"\n"+str(xlist)
                 MessageReply(token,xlist)
@@ -290,16 +293,19 @@ def GetUser():
         # CountInsertData(ar[i])
         # print(ar[i])
         TestFn(ar[i])
+        # TestFn('U377cab5da50240870dab5b689b463b32')
         i=i+1
         
     # for x in Getdata :
     #     lis = FormatStr(x)
     #     # print(lis)
     #     CountInsertData(lis)
+
 def TestFn(data):
-    # print('dataTest---------------->',data)
+    # print('main_data---------------->',data)
     i=0
     x=[]
+    # y=['U07ee8d35cb363791ff5c7da807ba978c','U377cab5da50240870dab5b689b463b32']
     while i < len(data) :
         select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
         mycursor = db.cursor()
@@ -311,14 +317,50 @@ def TestFn(data):
         # print('select_insertFetch--------------->',setData)
         if setData is None:
             x.append(data)
-            # urls = 'https://api.line.me/v2/bot/message/broadcast'
+            urls = 'https://api.line.me/v2/bot/message/multicast'
+            linepayload = {} 
+            linepayload['type'] = 'sticker'
+            linepayload['packageId'] = '789'
+            linepayload['stickerId'] = '10866' 
+            payload = {
+            "to": [data],
+            "messages":[
+                {
+                    "type":"text",
+                    "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ \n โปรดบันทึกค่ามิเตอร์เพื่อการใช้งาน \n ที่ดีที่สุด "
+                },
+                    linepayload
+            ],
+        
+            }
+            accessToken = os.getenv("ACCESSTOKEN");            
+            # print('payload---->มีค่า',payload)
+            print('Alert ->',x)
+            # print('y---->มีค่า',y)
+        
+            headers = {
+            'content-type': 'application/json',
+            'Authorization':'Bearer '+str(accessToken),
+            # 'X-Line-Retry-Key':str((uuid.uuid1()))
+            } 
+            r = requests.post(urls, data=json.dumps(payload), headers=headers)
+            print(r)
+            # print('-')
+
+        elif setData:
+            print('-')
+            # print('is not Null------->',setData)
+
+        i=i+1
+        # if x : 
+            
+            # urls = 'https://api.line.me/v2/bot/message/multicast'
             # linepayload = {} 
             # linepayload['type'] = 'sticker'
             # linepayload['packageId'] = '789'
-            # linepayload['stickerId'] = '10866'
-
-
+            # linepayload['stickerId'] = '10866' 
             # payload = {
+            # "to": y,
             # "messages":[
             #     {
             #         "type":"text",
@@ -328,52 +370,18 @@ def TestFn(data):
             # ],
         
             # }
-            # accessToken = os.getenv("ACCESSTOKEN");
-
+            # accessToken = os.getenv("ACCESSTOKEN");            
+            # print('payload---->มีค่า',payload)
+            # print('x---->มีค่า',x)
+            # print('y---->มีค่า',y)
+        
             # headers = {
             # 'content-type': 'application/json',
             # 'Authorization':'Bearer '+str(accessToken),
-            # 'X-Line-Retry-Key':str((uuid.uuid1()))
+            # # 'X-Line-Retry-Key':str((uuid.uuid1()))
             # } 
-            # r = requests.post(urls, data=json.dumps(payload), headers=headers)
-            # print(r)
-            print('-')
-            # print('isNull------->',setData ,'user',data)
-
-        elif setData:
-            print('-')
-            # print('is not Null------->',setData)
-
-        i=i+1
-        if x : 
-            
-            urls = 'https://api.line.me/v2/bot/message/multicast'
-            linepayload = {} 
-            linepayload['type'] = 'sticker'
-            linepayload['packageId'] = '789'
-            linepayload['stickerId'] = '10866' 
-            payload = {
-            "to": x,
-            "messages":[
-                {
-                    "type":"text",
-                    "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ "
-                },
-                    linepayload
-            ],
-        
-            }
-            accessToken = os.getenv("ACCESSTOKEN");            
-            print('x---->มีค่า',payload)
-            print('x---->มีค่า',x)
-                    
-            headers = {
-            'content-type': 'application/json',
-            'Authorization':'Bearer '+str(accessToken),
-            # 'X-Line-Retry-Key':str((uuid.uuid1()))
-            } 
-            r = requests.post(urls, data=json.dumps(payload), headers=headers)
-            print(r)
+            # # r = requests.post(urls, data=json.dumps(payload), headers=headers)
+            # # print(r)
         return
 
 
@@ -433,7 +441,7 @@ def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='09', minute='30')
+scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30')
 # scheduler.add_job(func=GetUser, trigger="interval", seconds=10)
 scheduler.start()
 
