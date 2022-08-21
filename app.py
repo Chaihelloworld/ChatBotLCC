@@ -330,8 +330,8 @@ def TestFn(useri_idFetch):
             'Authorization':'Bearer '+str(accessToken),
             # 'X-Line-Retry-Key':str((uuid.uuid1()))
             } 
-        #    r = requests.post(urls, data=json.dumps(payload), headers=headers)
-        #    print(r)
+           r = requests.post(urls, data=json.dumps(payload), headers=headers)
+           print(r)
          
            i=i+1
         else:
@@ -444,7 +444,7 @@ def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
 scheduler = BackgroundScheduler()
-# scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30' )
+scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30' )
 # scheduler.add_job(func=GetUser, trigger="interval", seconds=10)
 scheduler.start()
 
