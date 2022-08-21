@@ -277,12 +277,12 @@ def SelectValid(user_id):
 
 
 def GetUser():
-    select_Geet = "SELECT user_id FROM user_list_meter GROUP BY user_id"
+    select_Geet = "SELECT user_id FROM test_meter GROUP BY user_id"
     mycursor = db.cursor()
     mycursor.execute(select_Geet ,{})
     Getdata = mycursor.fetchall()
-    print(len(Getdata))
     i = 0
+    j = 0
     ar = []
     while i < len(Getdata)  :
         # print('export------------------>',Getdata[i])
@@ -295,18 +295,21 @@ def GetUser():
         TestFn(ar[i])
         # TestFn('U377cab5da50240870dab5b689b463b32')
         i=i+1
-        
+    # y=['U07ee8d35cb363791ff5c7da807ba978c','U377cab5da50240870dab5b689b463b32']
+    # print('y-------->',y)
+    # TestFn(y)    
     # for x in Getdata :
     #     lis = FormatStr(x)
     #     # print(lis)
     #     CountInsertData(lis)
 
 def TestFn(data):
-    # print('main_data---------------->',data)
+    print('main_data---------------->',len(data))
     i=0
     x=[]
     # y=['U07ee8d35cb363791ff5c7da807ba978c','U377cab5da50240870dab5b689b463b32']
     while i < len(data) :
+        print('main_data[1]---------------->',data)
         select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
         mycursor = db.cursor()
         #  m2
@@ -327,7 +330,7 @@ def TestFn(data):
             "messages":[
                 {
                     "type":"text",
-                    "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ \n โปรดบันทึกค่ามิเตอร์เพื่อการใช้งาน \n ที่ดีที่สุด "
+                    "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ \n โปรดบันทึกค่ามิเตอร์เพื่อการใช้งานที่ดีที่สุด "
                 },
                     linepayload
             ],
@@ -335,7 +338,7 @@ def TestFn(data):
             }
             accessToken = os.getenv("ACCESSTOKEN");            
             # print('payload---->มีค่า',payload)
-            print('Alert ->',x)
+            print('Alert ->',x ,'ส่งไก่')
             # print('y---->มีค่า',y)
         
             headers = {
@@ -352,36 +355,6 @@ def TestFn(data):
             # print('is not Null------->',setData)
 
         i=i+1
-        # if x : 
-            
-            # urls = 'https://api.line.me/v2/bot/message/multicast'
-            # linepayload = {} 
-            # linepayload['type'] = 'sticker'
-            # linepayload['packageId'] = '789'
-            # linepayload['stickerId'] = '10866' 
-            # payload = {
-            # "to": y,
-            # "messages":[
-            #     {
-            #         "type":"text",
-            #         "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ "
-            #     },
-            #         linepayload
-            # ],
-        
-            # }
-            # accessToken = os.getenv("ACCESSTOKEN");            
-            # print('payload---->มีค่า',payload)
-            # print('x---->มีค่า',x)
-            # print('y---->มีค่า',y)
-        
-            # headers = {
-            # 'content-type': 'application/json',
-            # 'Authorization':'Bearer '+str(accessToken),
-            # # 'X-Line-Retry-Key':str((uuid.uuid1()))
-            # } 
-            # # r = requests.post(urls, data=json.dumps(payload), headers=headers)
-            # # print(r)
         return
 
 
@@ -441,7 +414,7 @@ def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30')
+scheduler.add_job(func=GetUser, trigger="cron", hour='20', minute='10' )
 # scheduler.add_job(func=GetUser, trigger="interval", seconds=10)
 scheduler.start()
 
