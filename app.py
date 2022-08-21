@@ -276,57 +276,94 @@ def SelectValid(user_id):
                     return sum(x)
 
 
-def GetUser():
+# def GetUser():
+#     select_Geet = "SELECT user_id FROM test_meter GROUP BY user_id"
+#     mycursor = db.cursor()
+#     mycursor.execute(select_Geet ,{})
+#     Getdata = mycursor.fetchall()
+#     i = 0
+#     ar = []
+#     while i < len(Getdata)  :
+#         ar.append(','.join(Getdata[i]))
+#         TestFn(ar[i])
+#         i=i+1
+
+# def TestFn(useri_idFetch):
+#     length = len(useri_idFetch)
+#     print('main_dataLane---------------->',useri_idFetch,length)
+#     i=0
+#     x=[]
+#     # y=['U07ee8d35cb363791ff5c7da807ba978c','U377cab5da50240870dab5b689b463b32']
+#     while i < len(useri_idFetch) :
+#         print('main_data[1]---------------->',useri_idFetch)
+#         select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
+#         mycursor = db.cursor()
+#         #  m2
+#         mycursor.execute(select_insert, { 'user_id': useri_idFetch ,'date': date.today().strftime("%Y%m%d") } )
+#         select_insertFetch = mycursor.fetchall()
+#         setData = sumMin(select_insertFetch)
+        
+#         # print('select_insertFetch--------------->',setData)
+#         if setData is None:
+#             x.append(useri_idFetch)
+#             urls = 'https://api.line.me/v2/bot/message/multicast'
+#             linepayload = {} 
+#             linepayload['type'] = 'sticker'
+#             linepayload['packageId'] = '789'
+#             linepayload['stickerId'] = '10866' 
+#             payload = {
+#             "to": [useri_idFetch],
+#             "messages":[
+#                 {
+#                     "type":"text",
+#                     "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ \n โปรดบันทึกค่ามิเตอร์เพื่อการใช้งานที่ดีที่สุด "
+#                 },
+#                     linepayload
+#             ],
+        
+#             }
+#             accessToken = os.getenv("ACCESSTOKEN");            
+#             # print('payload---->มีค่า',payload)
+#             print('Alert ->',x ,'ส่งไก่')
+#             # print('y---->มีค่า',y)
+        
+#             headers = {
+#             'content-type': 'application/json',
+#             'Authorization':'Bearer '+str(accessToken),
+#             # 'X-Line-Retry-Key':str((uuid.uuid1()))
+#             } 
+#             # r = requests.post(urls, data=json.dumps(payload), headers=headers)
+#             # print(r)
+#             # print('-')
+
+#         elif setData:
+#             print('-')
+#             # print('is not Null------->',setData)
+
+#         i=i+1
+#         return
+def TestFn():
     select_Geet = "SELECT user_id FROM test_meter GROUP BY user_id"
     mycursor = db.cursor()
     mycursor.execute(select_Geet ,{})
     Getdata = mycursor.fetchall()
     i = 0
-    j = 0
     ar = []
     while i < len(Getdata)  :
-        # print('export------------------>',Getdata[i])
         ar.append(','.join(Getdata[i]))
-        # print('export2------------------>',','.join(Getdata[i]))
-        # print('export2AR------------------>',ar)
-        # print(FormatStr(Getdata[i]))
-        # CountInsertData(ar[i])
-        # print(ar[i])
-        TestFn(ar[i])
-        # TestFn('U377cab5da50240870dab5b689b463b32')
-        i=i+1
-    # y=['U07ee8d35cb363791ff5c7da807ba978c','U377cab5da50240870dab5b689b463b32']
-    # print('y-------->',y)
-    # TestFn(y)    
-    # for x in Getdata :
-    #     lis = FormatStr(x)
-    #     # print(lis)
-    #     CountInsertData(lis)
-
-def TestFn(data):
-    print('main_data---------------->',len(data))
-    i=0
-    x=[]
-    # y=['U07ee8d35cb363791ff5c7da807ba978c','U377cab5da50240870dab5b689b463b32']
-    while i < len(data) :
-        print('main_data[1]---------------->',data)
         select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
         mycursor = db.cursor()
-        #  m2
-        mycursor.execute(select_insert, { 'user_id': data ,'date': date.today().strftime("%Y%m%d") } )
+        mycursor.execute(select_insert, { 'user_id': ar[i] ,'date': date.today().strftime("%Y%m%d") } )
         select_insertFetch = mycursor.fetchall()
         setData = sumMin(select_insertFetch)
-        
-        # print('select_insertFetch--------------->',setData)
         if setData is None:
-            x.append(data)
             urls = 'https://api.line.me/v2/bot/message/multicast'
             linepayload = {} 
             linepayload['type'] = 'sticker'
             linepayload['packageId'] = '789'
             linepayload['stickerId'] = '10866' 
             payload = {
-            "to": [data],
+            "to": [ar[i]],
             "messages":[
                 {
                     "type":"text",
@@ -338,7 +375,7 @@ def TestFn(data):
             }
             accessToken = os.getenv("ACCESSTOKEN");            
             # print('payload---->มีค่า',payload)
-            print('Alert ->',x ,'ส่งไก่')
+            print('Alert ->',ar[i] ,'ส่งไก่')
             # print('y---->มีค่า',y)
         
             headers = {
@@ -349,14 +386,12 @@ def TestFn(data):
             r = requests.post(urls, data=json.dumps(payload), headers=headers)
             print(r)
             # print('-')
+            i = i+1
 
         elif setData:
             print('-')
+            i = i+1
             # print('is not Null------->',setData)
-
-        i=i+1
-        return
-
 
 def sumMin(data):
     if data is not None:
@@ -414,8 +449,8 @@ def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='20', minute='10' )
-# scheduler.add_job(func=GetUser, trigger="interval", seconds=10)
+scheduler.add_job(func=TestFn, trigger="cron", hour='20', minute='45' )
+# scheduler.add_job(func=TestFn, trigger="interval", seconds=10)
 scheduler.start()
 
 
