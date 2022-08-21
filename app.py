@@ -1,8 +1,6 @@
 import json
 from operator import ge
 import os
-from pickle import FALSE
-from tkinter import Y
 from flask import Flask
 from flask import request
 from flask import make_response
@@ -337,55 +335,6 @@ def TestFn(useri_idFetch):
         else:
            print('None na')
            i=i+1
-
-    # while i < len(useri_idFetch) :
-    #     print('main_data[1]---------------->',useri_idFetch)
-    #     select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
-    #     mycursor = db.cursor()
-    #     #  m2
-    #     mycursor.execute(select_insert, { 'user_id': useri_idFetch ,'date': date.today().strftime("%Y%m%d") } )
-    #     select_insertFetch = mycursor.fetchall()
-    #     setData = sumMin(select_insertFetch)
-        
-    #     # print('select_insertFetch--------------->',setData)
-    #     if setData is None:
-    #         x.append(useri_idFetch)
-    #         urls = 'https://api.line.me/v2/bot/message/multicast'
-    #         linepayload = {} 
-    #         linepayload['type'] = 'sticker'
-    #         linepayload['packageId'] = '789'
-    #         linepayload['stickerId'] = '10866' 
-    #         payload = {
-    #         "to": y,
-    #         "messages":[
-    #             {
-    #                 "type":"text",
-    #                 "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ \nโปรดบันทึกค่ามิเตอร์เพื่อการใช้งานที่ดีที่สุด "
-    #             },
-    #                 linepayload
-    #         ],
-        
-    #         }
-    #         accessToken = os.getenv("ACCESSTOKEN");            
-    #         # print('payload---->มีค่า',payload)
-    #         print('Alert ->',x ,'ส่งไก่')
-    #         # print('y---->มีค่า',y)
-        
-    #         headers = {
-    #         'content-type': 'application/json',
-    #         'Authorization':'Bearer '+str(accessToken),
-    #         # 'X-Line-Retry-Key':str((uuid.uuid1()))
-    #         } 
-    #         # r = requests.post(urls, data=json.dumps(payload), headers=headers)
-    #         # print(r)
-    #         # print('-')
-
-    #     elif setData:
-    #         print('-')
-    #         # print('is not Null------->',setData)
-
-    #     i=i+1
-    #     return
 
 
 def sumMin(data):
