@@ -290,14 +290,14 @@ def GetUser():
         i=i+1
     # TestFn(ar)
     print(ar)
-    y=['U377cab5da50240870dab5b689b463b32']
+    y=['U377cab5da50240870dab5b689b463b32','U07ee8d35cb363791ff5c7da807ba978c']
     urls = 'https://api.line.me/v2/bot/message/multicast'
     linepayload = {} 
     linepayload['type'] = 'sticker'
     linepayload['packageId'] = '789'
     linepayload['stickerId'] = '10866' 
     payload = {
-            "to": ar,
+            "to": y,
             "messages":[
                 {
                     "type":"text",
@@ -313,6 +313,7 @@ def GetUser():
             'Authorization':'Bearer '+str(accessToken),
             # 'X-Line-Retry-Key':str((uuid.uuid1()))
             } 
+    print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
     r = requests.post(urls, data=json.dumps(payload), headers=headers)
     print(r)
 
@@ -420,8 +421,10 @@ def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='20', minute='30' )
-# scheduler.add_job(func=GetUser, trigger="interval", seconds=10)
+# scheduler.add_job(func=GetUser, trigger="cron", hour='20', minute='30' )
+# scheduler.add_job(func=GetUser, trigger="interval", seconds=60)
+
+
 scheduler.start()
 
 
