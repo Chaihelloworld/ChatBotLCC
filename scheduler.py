@@ -8,9 +8,6 @@ from app import GetUser
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job('interval', minutes=1)
-
-def Sometime():
-    GetUser()
+sched.add_job(GetUser, 'cron', month='1-12', day='*', hour='22', minute='05')
 
 sched.start()
