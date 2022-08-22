@@ -276,9 +276,11 @@ def SelectValid(user_id):
 
 
 def GetUser():
-    select_Geet = "SELECT user_id FROM user_list_meter GROUP BY user_id"
+    # select_Geet = "SELECT user_id FROM user_list_meter GROUP BY user_id"
+    select_Geet = "SELECT user_id FROM user_list_meter WHERE user_id NOT IN (SELECT user_id FROM user_list_meter WHERE create_at >= %(date)s) GROUP BY user_id"
+    today = date.today().strftime("%Y%m%d")
     mycursor = db.cursor()
-    mycursor.execute(select_Geet ,{})
+    mycursor.execute(select_Geet ,{'date': today})
     Getdata = mycursor.fetchall()
     i = 0
     ar = []
@@ -286,33 +288,16 @@ def GetUser():
         ar.append(','.join(Getdata[i]))
         # TestFn(ar[i])
         i=i+1
-    TestFn(ar)
-
-
-def TestFn(useri_idFetch):
-    length = len(useri_idFetch)
-    # print('mainData---------------->',useri_idFetch)
-    # print('main_dataLane---------------->',length)
-    select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
-    mycursor = db.cursor()
-
-    i=0
-    while i < length:
-        # print('useri_idFetch-------->',useri_idFetch[i])
-        mycursor.execute(select_insert, { 'user_id': useri_idFetch[i] ,'date': date.today().strftime("%Y%m%d") } )
-        select_insertFetch = mycursor.fetchall()
-        setData = sumMin(select_insertFetch)
-        print('db_data--------->',setData)
-      
-        if setData is None:
-           print('Alert ->',useri_idFetch[i] ,'ส่งไก่')
-           urls = 'https://api.line.me/v2/bot/message/multicast'
-           linepayload = {} 
-           linepayload['type'] = 'sticker'
-           linepayload['packageId'] = '789'
-           linepayload['stickerId'] = '10866' 
-           payload = {
-            "to": [useri_idFetch[i]],
+    # TestFn(ar)
+    print(ar)
+    y=['U377cab5da50240870dab5b689b463b32']
+    urls = 'https://api.line.me/v2/bot/message/multicast'
+    linepayload = {} 
+    linepayload['type'] = 'sticker'
+    linepayload['packageId'] = '789'
+    linepayload['stickerId'] = '10866' 
+    payload = {
+            "to": ar,
             "messages":[
                 {
                     "type":"text",
@@ -322,19 +307,61 @@ def TestFn(useri_idFetch):
             ],
         
             }
-           accessToken = os.getenv("ACCESSTOKEN");            
-           headers = {
+    accessToken = os.getenv("ACCESSTOKEN");            
+    headers = {
             'content-type': 'application/json',
             'Authorization':'Bearer '+str(accessToken),
             # 'X-Line-Retry-Key':str((uuid.uuid1()))
             } 
-           r = requests.post(urls, data=json.dumps(payload), headers=headers)
-           print(r)
+    r = requests.post(urls, data=json.dumps(payload), headers=headers)
+    print(r)
+
+# def TestFn(useri_idFetch):
+#     length = len(useri_idFetch)
+#     # print('mainData---------------->',useri_idFetch)
+#     # print('main_dataLane---------------->',length)
+#     # select_insert = "SELECT meter_value FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at >= %(date)s"
+#     # mycursor = db.cursor()
+
+#     i=0
+#     while i < length:
+#         # print('useri_idFetch-------->',useri_idFetch[i])
+#         # mycursor.execute(select_insert, { 'user_id': useri_idFetch[i] ,'date': date.today().strftime("%Y%m%d") } )
+#         # select_insertFetch = mycursor.fetchall()
+#         setData = sumMin(select_insertFetch)
+#         print('db_data--------->',setData)
+      
+#         if setData is None:
+#            print('Alert ->',useri_idFetch[i] ,'ส่งไก่')
+#            urls = 'https://api.line.me/v2/bot/message/multicast'
+#            linepayload = {} 
+#            linepayload['type'] = 'sticker'
+#            linepayload['packageId'] = '789'
+#            linepayload['stickerId'] = '10866' 
+#            payload = {
+#             "to": [useri_idFetch[i]],
+#             "messages":[
+#                 {
+#                     "type":"text",
+#                     "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ \nโปรดบันทึกค่ามิเตอร์เพื่อการใช้งานที่ดีที่สุด "
+#                 },
+#                     linepayload
+#             ],
+        
+#             }
+#            accessToken = os.getenv("ACCESSTOKEN");            
+#            headers = {
+#             'content-type': 'application/json',
+#             'Authorization':'Bearer '+str(accessToken),
+#             # 'X-Line-Retry-Key':str((uuid.uuid1()))
+#             } 
+#         #    r = requests.post(urls, data=json.dumps(payload), headers=headers)
+#         #    print(r)
          
-           i=i+1
-        else:
-           print('None na')
-           i=i+1
+#            i=i+1
+#         else:
+#            print('None na')
+#            i=i+1
 
 
 def sumMin(data):
@@ -393,7 +420,7 @@ def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=GetUser, trigger="cron", hour='16', minute='30' )
+scheduler.add_job(func=GetUser, trigger="cron", hour='20', minute='30' )
 # scheduler.add_job(func=GetUser, trigger="interval", seconds=10)
 scheduler.start()
 
