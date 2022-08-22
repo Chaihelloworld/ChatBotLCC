@@ -32,7 +32,6 @@ from dotenv import dotenv_values
 config = dotenv_values(".env")  # config = {"USER": "foo", "EMAIL": "foo@example.org"}
 import time
 
-import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import send_from_directory
 import requests
