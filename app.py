@@ -274,47 +274,47 @@ def SelectValid(user_id):
                     return sum(x)
 
 
-def GetUser():
-    # select_Geet = "SELECT user_id FROM user_list_meter GROUP BY user_id"
-    select_Geet = "SELECT user_id FROM user_list_meter WHERE user_id NOT IN (SELECT user_id FROM user_list_meter WHERE create_at >= %(date)s) GROUP BY user_id"
-    today = date.today().strftime("%Y%m%d")
-    mycursor = db.cursor()
-    mycursor.execute(select_Geet ,{'date': today})
-    Getdata = mycursor.fetchall()
-    i = 0
-    ar = []
-    while i < len(Getdata)  :
-        ar.append(','.join(Getdata[i]))
-        # TestFn(ar[i])
-        i=i+1
-    # TestFn(ar)
-    print(ar)
-    y=['U377cab5da50240870dab5b689b463b32','U07ee8d35cb363791ff5c7da807ba978c']
-    urls = 'https://api.line.me/v2/bot/message/multicast'
-    linepayload = {} 
-    linepayload['type'] = 'sticker'
-    linepayload['packageId'] = '789'
-    linepayload['stickerId'] = '10866' 
-    payload = {
-            "to": y,
-            "messages":[
-                {
-                    "type":"text",
-                    "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ \nโปรดบันทึกค่ามิเตอร์เพื่อการใช้งานที่ดีที่สุด "
-                },
-                    linepayload
-            ],
+# def GetUser():
+#     # select_Geet = "SELECT user_id FROM user_list_meter GROUP BY user_id"
+#     select_Geet = "SELECT user_id FROM user_list_meter WHERE user_id NOT IN (SELECT user_id FROM user_list_meter WHERE create_at >= %(date)s) GROUP BY user_id"
+#     today = date.today().strftime("%Y%m%d")
+#     mycursor = db.cursor()
+#     mycursor.execute(select_Geet ,{'date': today})
+#     Getdata = mycursor.fetchall()
+#     i = 0
+#     ar = []
+#     while i < len(Getdata)  :
+#         ar.append(','.join(Getdata[i]))
+#         # TestFn(ar[i])
+#         i=i+1
+#     # TestFn(ar)
+#     print(ar)
+#     y=['U377cab5da50240870dab5b689b463b32','U07ee8d35cb363791ff5c7da807ba978c']
+#     urls = 'https://api.line.me/v2/bot/message/multicast'
+#     linepayload = {} 
+#     linepayload['type'] = 'sticker'
+#     linepayload['packageId'] = '789'
+#     linepayload['stickerId'] = '10866' 
+#     payload = {
+#             "to": y,
+#             "messages":[
+#                 {
+#                     "type":"text",
+#                     "text":"ลืมหรือป่าว คุณยังไม่ได้บันทึกค่ามิเตอร์นะคะ \nโปรดบันทึกค่ามิเตอร์เพื่อการใช้งานที่ดีที่สุด "
+#                 },
+#                     linepayload
+#             ],
         
-            }
-    accessToken = os.getenv("ACCESSTOKEN");            
-    headers = {
-            'content-type': 'application/json',
-            'Authorization':'Bearer '+str(accessToken),
-            # 'X-Line-Retry-Key':str((uuid.uuid1()))
-            } 
-    print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
-    r = requests.post(urls, data=json.dumps(payload), headers=headers)
-    print(r)
+#             }
+#     accessToken = os.getenv("ACCESSTOKEN");            
+#     headers = {
+#             'content-type': 'application/json',
+#             'Authorization':'Bearer '+str(accessToken),
+#             # 'X-Line-Retry-Key':str((uuid.uuid1()))
+#             } 
+#     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
+#     r = requests.post(urls, data=json.dumps(payload), headers=headers)
+#     print(r)
 
 # def TestFn(useri_idFetch):
 #     length = len(useri_idFetch)
@@ -419,12 +419,12 @@ def CountInsertData(user_id):
 def print_date_time():
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
 
-scheduler = BackgroundScheduler()
-# scheduler.add_job(func=GetUser, trigger="cron", hour='20', minute='30' )
-# scheduler.add_job(func=GetUser, trigger="interval", seconds=60)
+# scheduler = BackgroundScheduler()
+# # scheduler.add_job(func=GetUser, trigger="cron", hour='20', minute='30' )
+# # scheduler.add_job(func=GetUser, trigger="interval", seconds=60)
 
 
-scheduler.start()
+# scheduler.start()
 
 
 db =  mysql.connector.connect(
@@ -551,109 +551,67 @@ def getReport_mounth(respond_dict):
     d11 = date.today().strftime("%Y")+'/11'
     d12 = date.today().strftime("%Y")+'/12'
     mycursor = db.cursor()
-    select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m3 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m4 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m5 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m6 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m7 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m8 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m9 = "SELECT MAX(meter_value) - MIN(meter_value)FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m10 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m11 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    select_m12 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
-    mycursor.execute(select_m1, { 'user_id': user_id ,'group': d1 } )
-    myresult_m1 = mycursor.fetchall()
-    mycursor.execute(select_m2, { 'user_id': user_id ,'group': d2 } )
-    myresult_m2 = mycursor.fetchall()
-    mycursor.execute(select_m3, { 'user_id': user_id ,'group': d3 } )
-    myresult_m3 = mycursor.fetchall()
-    mycursor.execute(select_m4, { 'user_id': user_id ,'group': d4 } )
-    myresult_m4 = mycursor.fetchall()
-    mycursor.execute(select_m5, { 'user_id': user_id ,'group': d5 } )
-    myresult_m5 = mycursor.fetchall()
-    mycursor.execute(select_m6, { 'user_id': user_id ,'group': d6 } )
-    myresult_m6 = mycursor.fetchall()
-    mycursor.execute(select_m7, { 'user_id': user_id ,'group': d7 } )
-    myresult_m7 = mycursor.fetchall()
-    mycursor.execute(select_m8, { 'user_id': user_id ,'group': d8 } )
-    myresult_m8 = mycursor.fetchall()
-    mycursor.execute(select_m9, { 'user_id': user_id ,'group': d9 } )
-    myresult_m9 = mycursor.fetchall()
-    mycursor.execute(select_m10, { 'user_id': user_id ,'group': d10 } )
-    myresult_m10 = mycursor.fetchall()
-    mycursor.execute(select_m11, { 'user_id': user_id ,'group': d11 } )
-    myresult_m11 = mycursor.fetchall()
-    mycursor.execute(select_m12, { 'user_id': user_id ,'group': d12 } )
-    myresult_m12 = mycursor.fetchall()
     
-    m1_x1 = sumMin(myresult_m1)
-    m2_x1 = sumMin(myresult_m2)
-    m3_x1 = sumMin(myresult_m3)
-    m4_x1 = sumMin(myresult_m4)
-    m5_x1 = sumMin(myresult_m5)
-    m6_x1 = sumMin(myresult_m6)
-    m7_x1 = sumMin(myresult_m7)
-    m8_x1 = sumMin(myresult_m8)
-    m9_x1 = sumMin(myresult_m9)
-    m10_x1 = sumMin(myresult_m10)
-    m11_x1 = sumMin(myresult_m11)
-    m12_x1 = sumMin(myresult_m12)
+
+    # select_m1 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m2 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m3 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m4 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m5 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m6 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m7 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m8 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m9 = "SELECT MAX(meter_value) - MIN(meter_value)FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m10 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m11 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # select_m12 = "SELECT MAX(meter_value) - MIN(meter_value) FROM user_list_meter WHERE user_id  =  %(user_id)s AND group_month  = %(group)s"
+    # mycursor.execute(select_m1, { 'user_id': user_id ,'group': d1 } )
+    # myresult_m1 = mycursor.fetchall()
+    # mycursor.execute(select_m2, { 'user_id': user_id ,'group': d2 } )
+    # myresult_m2 = mycursor.fetchall()
+    # mycursor.execute(select_m3, { 'user_id': user_id ,'group': d3 } )
+    # myresult_m3 = mycursor.fetchall()
+    # mycursor.execute(select_m4, { 'user_id': user_id ,'group': d4 } )
+    # myresult_m4 = mycursor.fetchall()
+    # mycursor.execute(select_m5, { 'user_id': user_id ,'group': d5 } )
+    # myresult_m5 = mycursor.fetchall()
+    # mycursor.execute(select_m6, { 'user_id': user_id ,'group': d6 } )
+    # myresult_m6 = mycursor.fetchall()
+    # mycursor.execute(select_m7, { 'user_id': user_id ,'group': d7 } )
+    # myresult_m7 = mycursor.fetchall()
+    # mycursor.execute(select_m8, { 'user_id': user_id ,'group': d8 } )
+    # myresult_m8 = mycursor.fetchall()
+    # mycursor.execute(select_m9, { 'user_id': user_id ,'group': d9 } )
+    # myresult_m9 = mycursor.fetchall()
+    # mycursor.execute(select_m10, { 'user_id': user_id ,'group': d10 } )
+    # myresult_m10 = mycursor.fetchall()
+    # mycursor.execute(select_m11, { 'user_id': user_id ,'group': d11 } )
+    # myresult_m11 = mycursor.fetchall()
+    # mycursor.execute(select_m12, { 'user_id': user_id ,'group': d12 } )
+    # myresult_m12 = mycursor.fetchall()
+    
+    # m1_x1 = sumMin(myresult_m1)
+    # m2_x1 = sumMin(myresult_m2)
+    # m3_x1 = sumMin(myresult_m3)
+    # m4_x1 = sumMin(myresult_m4)
+    # m5_x1 = sumMin(myresult_m5)
+    # m6_x1 = sumMin(myresult_m6)
+    # m7_x1 = sumMin(myresult_m7)
+    # m8_x1 = sumMin(myresult_m8)
+    # m9_x1 = sumMin(myresult_m9)
+    # m10_x1 = sumMin(myresult_m10)
+    # m11_x1 = sumMin(myresult_m11)
+    # m12_x1 = sumMin(myresult_m12)
  
     answer_functionx = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["message"]["text"]
     if answer_functionx == "ข้อมูลรายเดือน" :
-       result1 = m1_x1
-       result2 = m2_x1
-       result3 = m3_x1
-       result4 = m4_x1
-       result5 = m5_x1
-       result6 = m6_x1
-       result7 = m7_x1
-       result8 = m8_x1
-       result9 = m9_x1
-       result10 = m10_x1
-       result11 = m11_x1
-       result12 = m12_x1
-       xMax = max(result1,result2,result3,result4,result5,result6,result7,result8,result9,result10,result11,result12)
-       print(xMax)
-       if xMax == result1:
-          textMax = "เดือน ม.ค."
-       elif xMax == result2:
-          textMax = "เดือน ก.พ."
-       elif xMax == result3:
-          textMax = "เดือน มี.ค."
-       elif xMax == result4:
-          textMax = "เดือน เม.ย."
-       elif xMax == result5:
-          textMax = "เดือน พ.ค."
-       elif xMax == result6:
-          textMax = "เดือน มิ.ย."
-       elif xMax == result7:
-          textMax = "เดือน ก.ค."
-       elif xMax == result8:
-          textMax = "เดือน ส.ค."
-       elif xMax == result9:
-          textMax = "เดือน ก.ย."
-       elif xMax == result10:
-          textMax = "เดือน พ.ย."
-       elif xMax == result11:
-          textMax = "เดือน ธ.ค."
-       elif xMax == result12:
-          textMax = "เดือน ก.พ."
-       text1 = "เดือน ม.ค. ใช้ทั้งหมด "+ str(result1) + " หน่วย"
-       text2 = "เดือน ก.พ. ใช้ทั้งหมด "+ str(result2) + " หน่วย"
-       text3 = "เดือน มี.ค. ใช้ทั้งหมด "+ str(result3) + " หน่วย"
-       text4 = "เดือน เม.ย. ใช้ทั้งหมด "+ str(result4) + " หน่วย"
-       text5 = "เดือน พ.ค. ใช้ทั้งหมด "+ str(result5) + " หน่วย"
-       text6 = "เดือน มิ.ย. ใช้ทั้งหมด "+ str(result6) + " หน่วย"
-       text7 = "เดือน ก.ค. ใช้ทั้งหมด "+ str(result7) + " หน่วย"
-       text8 = "เดือน ส.ค. ใช้ทั้งหมด "+ str(result8) + " หน่วย"
-       text9 = "เดือน ก.ย. ใช้ทั้งหมด "+ str(result9) + " หน่วย"
-       text10 = "เดือน ต.ค. ใช้ทั้งหมด "+ str(result10) + " หน่วย"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-       text11 = "เดือน พ.ย. ใช้ทั้งหมด "+ str(result11) + " หน่วย"
-       text12 = "เดือน ธ.ค. ใช้ทั้งหมด "+ str(result12) + " หน่วย"
-       answer_function = "ข้อมูลมิเตอร์ตั้งแต่ เดือน ม.ค. จนถึง ธ.ค. ของปีนี้ คือ \n" + text1 +"\n" + text2+"\n" + text3+"\n" + text4+"\n" + text5+"\n" + text6+"\n" + text7+"\n" + text8+"\n" + text9+"\n" + text10+"\n" + text11+"\n" + text12 +"\n" +"เดือนที่มีการใช้ไฟฟ้ามากที่สุดคือ " + "\n"+str(textMax) +" ใช้ "+str(xMax)+" หน่วย "
+       allReport = "select m.month ,coalesce(max(u.meter_value) - min(u.meter_value),0) as amount from ( SELECT 1 as month UNION SELECT 2 as month UNION SELECT 3 as month UNION SELECT 4 as month UNION SELECT 5 as month UNION SELECT 6 as month UNION SELECT 7 as month UNION SELECT 8 as month UNION SELECT 9 as month UNION SELECT 10 as month UNION SELECT 11 as month UNION SELECT 12 as month ) as  m left join user_list_meter u on month(u.create_at) = m.month  and year(u.create_at) = year(curdate()) AND u.user_id=%(user_id)s group by  m.month;"
+       mycursor.execute(allReport, { 'user_id': user_id } )
+       myresultReport = mycursor.fetchall()
+       print('myresultReport: true')
+    #    print(myresultReport[0][1],'\n')
+        # i=i+1
+    answer_function = "เดือน ม.ค. ใช้ทั้งหมด "+ str(myresultReport[0][1]) + " หน่วย\nเดือน ก.พ. ใช้ทั้งหมด "+ str(myresultReport[1][1]) + " หน่วย\nเดือน มี.ค. ใช้ทั้งหมด "+ str(myresultReport[2][1]) + " หน่วย\nเดือน เม.ย. ใช้ทั้งหมด "+ str(myresultReport[3][1]) + " หน่วย\nเดือน พ.ค. ใช้ทั้งหมด "+ str(myresultReport[4][1]) + " หน่วย\nเดือน มิ.ย. ใช้ทั้งหมด "+ str(myresultReport[5][1]) + " หน่วย\nเดือน ก.ค. ใช้ทั้งหมด "+ str(myresultReport[6][1]) + " หน่วย\nเดือน ส.ค. ใช้ทั้งหมด "+ str(myresultReport[7][1]) + " หน่วย\nเดือน ก.ย. ใช้ทั้งหมด "+ str(myresultReport[8][1]) + " หน่วย\nเดือน ต.ค. ใช้ทั้งหมด "+ str(myresultReport[9][1]) + " หน่วย\nเดือน พ.ย. ใช้ทั้งหมด "+ str(myresultReport[10][1]) + " หน่วย\nเดือน ธ.ค. ใช้ทั้งหมด "+ str(myresultReport[11][1]) + " หน่วย"
 
     d1 = date.today().strftime("%Y/%m/%d")
     return  answer_function 

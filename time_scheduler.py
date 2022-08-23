@@ -31,15 +31,15 @@ while i < len(Getdata)  :
         # TestFn(ar[i])
     i=i+1
     # TestFn(ar)
-    print(ar)
-y=['U377cab5da50240870dab5b689b463b32','U07ee8d35cb363791ff5c7da807ba978c']
+    # print(ar)
+# y=['U377cab5da50240870dab5b689b463b32','U07ee8d35cb363791ff5c7da807ba978c']
 urls = 'https://api.line.me/v2/bot/message/multicast'
 linepayload = {} 
 linepayload['type'] = 'sticker'
 linepayload['packageId'] = '789'
 linepayload['stickerId'] = '10866' 
 payload = {
-            "to": y,
+            "to": ar,
             "messages":[
                 {
                     "type":"text",
