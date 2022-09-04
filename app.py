@@ -1,11 +1,13 @@
+from ast import Num
 import json
 from operator import ge
 import os
+from tokenize import Number
 from flask import Flask
 from flask import request
 from flask import make_response
 
-from datetime import date
+from datetime import date, timezone
 from datetime import timedelta
 
 import uuid
@@ -96,6 +98,25 @@ def initText(data,meter):
                     x = " เมื่อวานใช้ไฟ ทั้งหมด "+str(meters)+" หน่วย"
 # "+str(meters)+"
                     return x
+
+def calNew(value,meter):
+        # print(value)
+    if value is not None:
+        for xs in value:
+                result = xs
+                if not all(result) == True : 
+                    return " ไม่มีค่าที่บันทึกของเมื่อวาน"
+                else : 
+                    y=sum(result)
+                    print('result  into function',result)
+                    print('y  into function',y)
+                    meters = (int(meter) - y)
+                    # print('เมื่อวานใช้ไฟไป----------------->',meters)
+                    # # meters = z-y
+                    x = "ใช้ไฟล่าสุดคือ "+str(meters)+" หน่วย"
+                    # x='ทดสอบระบบ'
+# "+str(meters)+"
+                    return x
 def menu_recormentation(respond_dict): 
     pots = respond_dict["queryResult"]["intent"]["displayName"]
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
@@ -106,8 +127,10 @@ def menu_recormentation(respond_dict):
     mycursor.execute(select_today, { 'user_id': user_id ,'d1': yesterday.strftime("%Y/%m/%d"),'d2':d1  })
     myresult = mycursor.fetchall()
     print('myresult1----------------------->',myresult)
-  
-
+    select_NewCal = "SELECT meter_value FROM user_list_meter where user_id= %(user_id)s ORDER BY ID DESC LIMIT 2;"
+    mycursorNew = db.cursor()
+    mycursorNew.execute(select_NewCal, { 'user_id': user_id })
+    myresultNeww = mycursorNew.fetchall()
     # select_today2 = "SELECT MAX(meter_value) FROM user_list_meter WHERE  user_id  =  %(user_id)s AND create_at = %(d2)s;"
     # d1 = date.today().strftime("%Y/%m/%d")
     # yesterday = date.today() - timedelta(days = 1)
@@ -121,7 +144,9 @@ def menu_recormentation(respond_dict):
     if pots == "CFmeter":
         xhead = respond_dict["queryResult"]["outputContexts"][0]["parameters"]["meter.original"]
         connect(user_id,xhead,group_month,d1)
-        xlist = initText(myresult,xhead)
+        # xlist = initText(myresult,xhead)
+        xlist = calNew(myresultNeww,xhead)
+
         MessageReply(token,xlist)
         # return xhead
     else:
@@ -155,7 +180,8 @@ def menu_recormentation(respond_dict):
 
             
             respond_dictQ = respond_dict["queryResult"]["intent"]["displayName"]
-            xlist = initText(myresult,meter_value) 
+            # xlist = initText(myresult,meter_value) 
+            xlist = calNew(myresultNeww,meter_value)
             # print('---->',ylist,'meter__--->',meter_value)
             # print('int(meter_value)---->',int(meter_value))
             # print('int(valid)---->',int(ylist))
@@ -484,19 +510,49 @@ def getReportBymonth(respond_dict):
     answer_function = 'ช่วงเดือน '+ calGroup(Smonth)  +' - '+ calGroup(Emonth)+ '\nใช้ทั้งหมด '+ str(result)+' หน่วย'
     return answer_function
 
+
 def getReportDay(respond_dict):
     user_id = respond_dict["originalDetectIntentRequest"]["payload"]["data"]["source"]["userId"]
     text_month = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["date-time.original"]
     Sd = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["date-time"]["startDate"]
+    # ["date-time"]["startDate"]
     Ed = respond_dict["queryResult"]["outputContexts"][1]["parameters"]["date-time"]["endDate"]
-    d1 = date.today().strftime("%Y")
-    print('d1---------->',d1)
-    if text_month != False :
+    # ["date-time"]["endDate"]
+    d1 = datetime.today().strftime('%Y-%m-%d')
+    print('startDate ----------------->',Sd)
+    print('endDate ----------------->',Ed)
+    print('name ----------------->',text_month)
+    calYaer = "0001"
+    # print( (Sd)  - (calYaer))
+    # print('d1---------->',d1)
+#     dt = datetime.strptime(
+#     Sd,
+#      "%m-%d %H:%M:%S"
+# )
+    d = datetime.fromisoformat(Sd).strftime('%Y-%m-%d')
+    # d.strftime('%Y-%m-%d')
+    print('Value -------------> ',d)
+    if d > d1:
+        print('yes')
         mycursor = db.cursor()
-        selectDay= "SELECT create_at, MAX(meter_value) FROM `user_list_meter` WHERE user_id =  %(user_id)s AND (create_at BETWEEN  %(Sd)s AND %(Ed)s) GROUP BY create_at;"
+        selectDay= "SELECT create_at, MAX(meter_value) FROM `user_list_meter` WHERE user_id =  %(user_id)s AND (create_at BETWEEN  DATE_ADD(%(Sd)s, INTERVAL -1 YEAR)  AND  DATE_ADD(%(Ed)s, INTERVAL -1 YEAR)) GROUP BY create_at;"
         # selectDay= "SELECT meter_value,create_at FROM `user_list_meter` WHERE user_id = %(user_id)s AND (create_at BETWEEN %(Sd)s AND %(Ed)s);"
         # SELECT create_at, MAX(meter_value) FROM `user_list_meter` WHERE user_id = "U377cab5da50240870dab5b689b463b32" AND (create_at BETWEEN "2022-08-01" AND "2022-08-31") GROUP BY create_at;
-        mycursor.execute(selectDay, { 'user_id': user_id ,'Sd': Sd ,'Ed': Ed} )
+        mycursor.execute(selectDay, { 'user_id': user_id ,'Sd': Sd ,'Ed': Ed,'calYaer':calYaer} )
+        resDays = mycursor.fetchall()
+        print(len(resDays))
+        x=FormatStr(resDays)
+        i=0
+        while i < len(resDays)  :
+          if i != len(resDays) :
+            i=i+1
+        return  str(x)
+    else  :
+        mycursor = db.cursor()
+        selectDay= "SELECT create_at, MAX(meter_value) FROM `user_list_meter` WHERE user_id =  %(user_id)s AND (create_at BETWEEN  %(Sd)s AND  %(Ed)s) GROUP BY create_at;"
+        # selectDay= "SELECT meter_value,create_at FROM `user_list_meter` WHERE user_id = %(user_id)s AND (create_at BETWEEN %(Sd)s AND %(Ed)s);"
+        # SELECT create_at, MAX(meter_value) FROM `user_list_meter` WHERE user_id = "U377cab5da50240870dab5b689b463b32" AND (create_at BETWEEN "2022-08-01" AND "2022-08-31") GROUP BY create_at;
+        mycursor.execute(selectDay, { 'user_id': user_id ,'Sd': Sd ,'Ed': Ed,'calYaer':calYaer} )
         resDays = mycursor.fetchall()
         print(len(resDays))
         x=FormatStr(resDays)
@@ -533,6 +589,8 @@ def FormatStr(data):
       print('\n'.join('{}: {}'.format(*val) for val in enumerate(x)))
       if len(data) == 0 :
         x.append(str('ไม่พบข้อมูล'))
+      elif len(data) == 1 :
+        x.append(str('ข้อมูลของท่านจะอัพเดทรอบถัดไปค่ะ'))
       text = ' \n'.join(map(str, x))
       return str(text)                                                                             
 
